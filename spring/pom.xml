@@ -9,6 +9,9 @@
 		<module>cassandra</module>
 		<module>kafka</module>
 		<module>test</module>
+		<module>autoconfiguration</module>
+		<module>web</module>
+		<module>wso2</module>
 	</modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
