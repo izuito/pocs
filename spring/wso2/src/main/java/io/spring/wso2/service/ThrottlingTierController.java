@@ -1,13 +1,18 @@
 package io.spring.wso2.service;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -19,8 +24,14 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import io.spring.wso2.WSO2Tests;
 import io.spring.wso2.model.RegisterRequest;
+import io.spring.wso2.model.RegisterResponse;
+import io.spring.wso2.model.TokenResponse;
 import io.spring.wso2.properties.WSO2Properties;
-import io.spring.wso2.properties.WSO2Properties.Apim;
+import io.spring.wso2.properties.WSO2Properties.Register;
+import io.spring.wso2.properties.WSO2Properties.ThrottlingTier;
+import io.spring.wso2.properties.WSO2Properties.ThrottlingTier.Create;
+import io.spring.wso2.properties.WSO2Properties.Token;
+import io.swagger.client.ApiException;
 import io.swagger.client.model.Tier;
 
 @RestController
@@ -31,35 +42,36 @@ public class ThrottlingTierController {
 	
 	private final RestTemplate rt;
 
-	private final WSO2Properties wp;
+	private final WSO2Properties w;
 
-	public ThrottlingTierController(RestTemplate rt, WSO2Properties wp) {
+	public ThrottlingTierController(RestTemplate rt, WSO2Properties w) {
 		this.rt = rt;
-		this.wp = wp;
+		this.w = w;
 	}
 
 	@PostMapping
 	public ResponseEntity<Tier> createTier(Tier tier) {
-		Apim apim = wp.getApim();
-
-//		TokenResponse token = getTokenByScope(apim.getTierManage());
-//
-//		Publisher publisher = wp.getPublisher();
-//		Add add = publisher.getAdd();
-//
-//		MultiValueMap<String, String> headers = headers(token.authorization(), add.getContentType());
-//
-//		HttpEntity<Tier> he = new HttpEntity<Tier>(tier, headers);
-//
-//		LOGGER.info("*** {}", he);
-//
-//		String url = publisher.getUrl() + "/" + add.getTierLevel();
-//
-//		ResponseEntity<Tier> res = rt.exchange(url, HttpMethod.POST, he, Tier.class);
-//
-//		LOGGER.info("*** {}", res);
+		ThrottlingTier tt = w.getThrottlingTier();
 		
-		return new ResponseEntity<>(null, HttpStatus.OK);
+		Create create = tt.getCreate();
+
+		TokenResponse token = getTokenByScope(create.getScope());
+		
+		create.setAuthorization(token.authorization());
+
+		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+		headers.add("Authorization", create.getAuthorization());
+		headers.add("Content-Type", create.getContentType());
+
+		HttpEntity<Tier> he = new HttpEntity<Tier>(tier, headers);
+		
+		String url = create.getUrl();
+		
+		ResponseEntity<Tier> res = rt.exchange(url , HttpMethod.POST, he, Tier.class);
+
+		LOGGER.info("*** {}", res);		
+		
+		return new ResponseEntity<>(res.getBody(), res.getStatusCode());
 	}
 
 	@PutMapping
@@ -82,30 +94,48 @@ public class ThrottlingTierController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
-//	private TokenResponse getTokenByScope(String scope) {
-//		ResponseEntity<RegisterResponse> re = executeRegister(registerRequest());
-//		RegisterResponse rr = re.getBody();
-//		ResponseEntity<TokenResponse> res = executeToken(rr.authorization(), "password", "admin", "admin", scope);
-//		return res.getBody();
-//	}
+	@ExceptionHandler(value = { ApiException.class })
+	public ResponseEntity<Exception> error(HttpServletRequest req, ApiException ex) {
+		return new ResponseEntity<>(ex, HttpStatus.valueOf(ex.getCode()));
+	}
 	
-//	private ResponseEntity<RegisterResponse> executeRegister(RegisterRequest rr) {
-//		MultiValueMap<String, String> mh = headers(rr.getAuthorization());
-//		HttpEntity<RegisterRequest> he = new HttpEntity<>(rr, mh);
-//		return rt.exchange(rr.getUrl(), HttpMethod.POST, he, RegisterResponse.class);
-//	}
+	private TokenResponse getTokenByScope(String scope) {
+		Register r = w.getRegister();
+		ResponseEntity<RegisterResponse> re = executeRegister(r);
+		RegisterResponse rr = re.getBody();
+		ResponseEntity<TokenResponse> res = executeToken(rr.authorization(), scope);
+		return res.getBody();
+	}
+	
+	private ResponseEntity<RegisterResponse> executeRegister(Register r) {
+		RegisterRequest rr = toRegisterRequest(r);
+		String authorization = "Basic " + r.authorization();
+		MultiValueMap<String, String> mh = headers(authorization, MediaType.APPLICATION_JSON_VALUE);
+		HttpEntity<RegisterRequest> he = new HttpEntity<>(rr, mh);
+		return rt.exchange(r.getUrl(), HttpMethod.POST, he, RegisterResponse.class);
+	}
+	
+	private ResponseEntity<TokenResponse> executeToken(String authorization, String scope) {
+		Token t = w.getToken();
+		UriComponentsBuilder uri = UriComponentsBuilder.fromUriString(t.getUrl())
+				.queryParam("grant_type", t.getGrantType())
+				.queryParam("username", t.getUsername())
+				.queryParam("password", t.getPassword())
+				.queryParam("scope", scope);
+		MultiValueMap<String, String> mh = new LinkedMultiValueMap<>();
+		mh.add("Authorization", "Basic " + authorization);	
+		return rt.exchange(uri.toUriString(), HttpMethod.POST, new HttpEntity<>(mh), TokenResponse.class);
+	}	
 
-//	private ResponseEntity<TokenResponse> executeToken(String authorization, String granttype, String username, String password,
-//			String scope) {
-//		String url = url(wp.getToken(), granttype, username, password, scope);
-//		MultiValueMap<String, String> mh = headers(authorization);
-//		return rt.exchange(url, HttpMethod.POST, new HttpEntity<>(mh), TokenResponse.class);
-//	}
-	
-	private MultiValueMap<String, String> headers(String token) {
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.add("Authorization", "Basic " + token);
-		return headers;
+	private RegisterRequest toRegisterRequest(Register r) {
+		RegisterRequest rr = new RegisterRequest();
+		rr.setCallbackUrl(r.getCallbackUrl());
+		rr.setClientName(r.getClientName());
+		rr.setTokenScope(r.getTokenScope());
+		rr.setOwner(r.getOwner());
+		rr.setGrantType(r.getGrantType());
+		rr.setSaasApp(r.isSaasApp());
+		return rr;
 	}
 	
 	private MultiValueMap<String, String> headers(String authorization, String contentType) {
@@ -114,31 +144,5 @@ public class ThrottlingTierController {
 		headers.add("Content-Type", contentType);
 		return headers;
 	}
-
-	private String url(String url, String granttype, String username, String password, String scope) {
-		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(url).queryParam("grant_type", granttype)
-				.queryParam("username", username).queryParam("password", password).queryParam("scope", scope);
-		return builder.toUriString();
-	}
 	
-	private HttpEntity<Tier> getHttpEntity(String authorization, String contentType, Tier tier) {
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.add("Authorization", authorization);
-		headers.add("Content-Type", contentType);
-		return new HttpEntity<>(tier, headers);
-	}
-	
-	private RegisterRequest registerRequest() {
-		RegisterRequest rr = new RegisterRequest();
-		rr.setCallbackUrl("www.google.lk");
-		rr.setClientName("rest_api_admin");
-		rr.setTokenScope("Production");
-		rr.setOwner("admin");
-		rr.setGrantType("password token_refresh");
-		rr.setSaasApp(true);
-//		rr.setUrl(wp.getUrlRegister());
-//		rr.setAuthorization("YWRtaW46YWRtaW4=");
-		return rr;
-	}
-
 }

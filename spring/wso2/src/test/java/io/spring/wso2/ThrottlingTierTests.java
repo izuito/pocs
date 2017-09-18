@@ -13,6 +13,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
@@ -37,59 +38,49 @@ import io.swagger.client.model.Tier.TierPlanEnum;
 public class ThrottlingTierTests {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Connecting.class);
-	
+
 	@Autowired
 	private RestTemplate rt;
 
 	@Autowired
 	private WSO2Properties w;
 
-//	@Test
-//	public void testName() throws Exception {
-//		
-//		ThrottlingTier tt = w.getThrottlingTier();
-//
-//		Create create = tt.getCreate();
-//
-//		LOGGER.info("{}", create.getUrl());
-//
-//	}
-
 	@Test
 	public void testCreateTier() throws Exception {
-		ThrottlingTier tt = w.getThrottlingTier();
-		
-		Create create = tt.getCreate();
-
-		TokenResponse token = getTokenByScope(create.getScope());
-		
-		create.setAuthorization(token.authorization());
-
 		Tier tier = tier();
+		
+		Create create = getCreate();
 
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.add("Authorization", create.getAuthorization());
-		headers.add("Content-Type", create.getContentType());
+		MultiValueMap<String, String> headers = headers(create.getAuthorization(), create.getContentType());
 
 		HttpEntity<Tier> he = new HttpEntity<Tier>(tier, headers);
-		
+
 		String url = create.getUrl();
-		
-		ResponseEntity<Tier> res = rt.exchange(url , HttpMethod.POST, he, Tier.class);
+
+		ResponseEntity<Tier> res = rt.exchange(url, HttpMethod.POST, he, Tier.class);
 
 		LOGGER.info("*** {}", res);
 
-		Assert.assertEquals(HttpStatus.CREATED, res.getStatusCode());		
+		Assert.assertEquals(HttpStatus.CREATED, res.getStatusCode());
+	}
+
+	private Create getCreate() {
+		ThrottlingTier tt = w.getThrottlingTier();
+		Create create = tt.getCreate();
+		TokenResponse token = getTokenByScope(create.getScope());
+		create.setAuthorization(token.authorization());
+		return create;
 	}
 
 	private TokenResponse getTokenByScope(String scope) {
 		Register r = w.getRegister();
 		ResponseEntity<RegisterResponse> re = executeRegister(r);
 		RegisterResponse rr = re.getBody();
-		ResponseEntity<TokenResponse> res = executeToken(rr.authorization(), scope);
+		String authorization = "Basic " + rr.authorization();
+		ResponseEntity<TokenResponse> res = executeToken(authorization, scope);
 		return res.getBody();
 	}
-	
+
 	private ResponseEntity<RegisterResponse> executeRegister(Register r) {
 		RegisterRequest rr = new RegisterRequest();
 		rr.setCallbackUrl(r.getCallbackUrl());
@@ -98,12 +89,12 @@ public class ThrottlingTierTests {
 		rr.setOwner(r.getOwner());
 		rr.setGrantType(r.getGrantType());
 		rr.setSaasApp(r.isSaasApp());
-		MultiValueMap<String, String> mh = new LinkedMultiValueMap<>();
-		mh.add("Authorization", r.authorization());		
+		String authorization = "Basic " + r.authorization();
+		MultiValueMap<String, String> mh = headers(authorization, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<RegisterRequest> he = new HttpEntity<>(rr, mh);
 		return rt.exchange(r.getUrl(), HttpMethod.POST, he, RegisterResponse.class);
 	}
-	
+
 	private ResponseEntity<TokenResponse> executeToken(String authorization, String scope) {
 		Token t = w.getToken();
 		UriComponentsBuilder uri = UriComponentsBuilder.fromUriString(t.getUrl())
@@ -112,10 +103,17 @@ public class ThrottlingTierTests {
 				.queryParam("password", t.getPassword())
 				.queryParam("scope", scope);
 		MultiValueMap<String, String> mh = new LinkedMultiValueMap<>();
-		mh.add("Authorization", authorization);	
+		mh.add("Authorization", authorization);
 		return rt.exchange(uri.toUriString(), HttpMethod.POST, new HttpEntity<>(mh), TokenResponse.class);
-	}	
-	
+	}
+
+	private MultiValueMap<String, String> headers(String authorization, String contentType) {
+		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
+		headers.add("Authorization", authorization);
+		headers.add("Content-Type", contentType);
+		return headers;
+	}
+
 	private Tier tier() {
 		Tier tier = new Tier();
 		Map<String, String> attributes = new HashMap<>();
@@ -131,5 +129,5 @@ public class ThrottlingTierTests {
 		tier.setUnitTime(60000L);
 		return tier;
 	}
-	
+
 }
