@@ -51,17 +51,9 @@ public class ThrottlingTierController {
 
 	@PostMapping
 	public ResponseEntity<Tier> createTier(Tier tier) {
-		ThrottlingTier tt = w.getThrottlingTier();
-		
-		Create create = tt.getCreate();
+		Create create = getCreate();
 
-		TokenResponse token = getTokenByScope(create.getScope());
-		
-		create.setAuthorization(token.authorization());
-
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.add("Authorization", create.getAuthorization());
-		headers.add("Content-Type", create.getContentType());
+		MultiValueMap<String, String> headers = headers(create.getAuthorization(), create.getContentType());
 
 		HttpEntity<Tier> he = new HttpEntity<Tier>(tier, headers);
 		
@@ -72,6 +64,14 @@ public class ThrottlingTierController {
 		LOGGER.info("*** {}", res);		
 		
 		return new ResponseEntity<>(res.getBody(), res.getStatusCode());
+	}
+
+	private Create getCreate() {
+		ThrottlingTier tt = w.getThrottlingTier();
+		Create create = tt.getCreate();
+		TokenResponse token = getTokenByScope(create.getScope());
+		create.setAuthorization(token.authorization());
+		return create;
 	}
 
 	@PutMapping
