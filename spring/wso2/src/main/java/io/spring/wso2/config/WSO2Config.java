@@ -9,7 +9,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLSession;
+import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
 
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
@@ -30,8 +35,10 @@ import org.springframework.web.client.RestTemplate;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.squareup.okhttp.OkHttpClient;
 
-import io.spring.wso2.config.WSO2Properties.Publisher;
+import io.spring.wso2.properties.WSO2Properties;
+import io.spring.wso2.properties.WSO2Properties.Publisher;
 import io.swagger.client.ApiClient;
 import io.swagger.client.api.ThrottlingTierCollectionApi;
 import io.swagger.client.api.ThrottlingTierIndividualApi;
@@ -54,15 +61,15 @@ public class WSO2Config {
 	}
 
 	@Bean
-	public ThrottlingTierIndividualApi throttlingTierIndividualApi() {
+	public ThrottlingTierIndividualApi throttlingTierIndividualApi() throws KeyManagementException, NoSuchAlgorithmException {
 		LOGGER.info("*** WSO2Config - ThrottlingTierIndividualApi");
-		return new ThrottlingTierIndividualApi(getApiClient());
+		return new ThrottlingTierIndividualApi(apiClient());
 	}
 
 	@Bean
-	public ThrottlingTierCollectionApi throttlingTierCollectionApi() {
+	public ThrottlingTierCollectionApi throttlingTierCollectionApi() throws KeyManagementException, NoSuchAlgorithmException {
 		LOGGER.info("*** WSO2Config - ThrottlingTierCollectionApi");
-		return new ThrottlingTierCollectionApi(getApiClient());
+		return new ThrottlingTierCollectionApi(apiClient());
 	}
 
 	@Bean
@@ -103,14 +110,46 @@ public class WSO2Config {
 		return new HttpComponentsClientHttpRequestFactory(hc);
 	}
 
-	private ApiClient getApiClient() {
+	@Bean
+	public ApiClient apiClient() throws KeyManagementException, NoSuchAlgorithmException {
 		ApiClient ac = new ApiClient();
-		ac.addDefaultHeader("Accept", "application/json");
 		Publisher publisher = properties.getPublisher();
+		ac.setHttpClient(okHttpClient());
 		ac.setBasePath(publisher.getUrl());
-		ac.setVerifyingSsl(false);
-		// ac.setHttpClient(getUnsafeOkHttpClient());
 		return ac;
+	}
+	
+	public OkHttpClient okHttpClient() throws NoSuchAlgorithmException, KeyManagementException {
+		OkHttpClient client = new OkHttpClient();
+		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
+			@Override
+			public void checkClientTrusted(java.security.cert.X509Certificate[] chain, String authType)
+					throws CertificateException {
+			}
+
+			@Override
+			public void checkServerTrusted(java.security.cert.X509Certificate[] chain, String authType)
+					throws CertificateException {
+			}
+
+			@Override
+			public java.security.cert.X509Certificate[] getAcceptedIssuers() {
+				return null;
+			}
+		} };
+		// Install the all-trusting trust manager
+		final SSLContext sslContext = SSLContext.getInstance("SSL");
+		sslContext.init(null, trustAllCerts, new java.security.SecureRandom());
+		// Create an ssl socket factory with our all-trusting manager
+		final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
+		client.setSslSocketFactory(sslSocketFactory);
+        client.setHostnameVerifier(new HostnameVerifier() {
+            @Override
+            public boolean verify(String hostname, SSLSession session) {
+                return true;
+            }
+        });
+		return client;
 	}
 
 }
