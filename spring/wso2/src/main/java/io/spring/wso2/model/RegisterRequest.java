@@ -1,8 +1,5 @@
 package io.spring.wso2.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(value = { "url", "authorization" })
 public class RegisterRequest {
 
 	private String callbackUrl;

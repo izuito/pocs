@@ -12,17 +12,14 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class WSO2Properties {
 
-	private Register register;
-
-	private Token token;
+	@Valid
+	private Register register = new Register();
 
 	@Valid
-	private Publisher publisher;
-
-	private Apim apim;
+	private Token token = new Token();
 
 	@Valid
-	private ThrottlingTier throttlingTier;
+	private ThrottlingTier throttlingTier = new ThrottlingTier();
 
 	public Register getRegister() {
 		return register;
@@ -38,22 +35,6 @@ public class WSO2Properties {
 
 	public void setToken(Token token) {
 		this.token = token;
-	}
-
-	public Publisher getPublisher() {
-		return publisher;
-	}
-
-	public void setPublisher(Publisher publisher) {
-		this.publisher = publisher;
-	}
-
-	public Apim getApim() {
-		return apim;
-	}
-
-	public void setApim(Apim apim) {
-		this.apim = apim;
 	}
 
 	public ThrottlingTier getThrottlingTier() {
@@ -250,9 +231,10 @@ public class WSO2Properties {
 		public void setAuthorization(String authorization) {
 			this.authorization = authorization;
 		}
-		
+
 		/**
 		 * Base64 Encoder String no campo Authorization
+		 * 
 		 * @return String
 		 */
 		public String authorization() {
@@ -323,12 +305,56 @@ public class WSO2Properties {
 		@Valid
 		private Create create;
 
+		@Valid
+		private Update update;
+
+		@Valid
+		private Delete delete;
+
+		@Valid
+		private Get get;
+
+		@Valid
+		private GetAll getAll;
+
 		public Create getCreate() {
 			return create;
 		}
 
 		public void setCreate(Create create) {
 			this.create = create;
+		}
+
+		public Update getUpdate() {
+			return update;
+		}
+
+		public void setUpdate(Update update) {
+			this.update = update;
+		}
+
+		public Delete getDelete() {
+			return delete;
+		}
+
+		public void setDelete(Delete delete) {
+			this.delete = delete;
+		}
+
+		public Get getGet() {
+			return get;
+		}
+
+		public void setGet(Get get) {
+			this.get = get;
+		}
+
+		public GetAll getGetAll() {
+			return getAll;
+		}
+
+		public void setGetAll(GetAll getAll) {
+			this.getAll = getAll;
 		}
 
 		public static class Create {
@@ -385,11 +411,201 @@ public class WSO2Properties {
 
 		}
 
-	}
+		public static class Update {
 
-	@Override
-	public String toString() {
-		return "WSO2Properties [register=" + register + ", publisher=" + publisher + "]";
+			@NotNull
+			private String url;
+			@NotNull
+			private String tierLevel;
+			private String authorization;
+			@NotNull
+			private String contentType;
+			@NotNull
+			private String scope;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+
+			public String getTierLevel() {
+				return tierLevel;
+			}
+
+			public void setTierLevel(String tierLevel) {
+				this.tierLevel = tierLevel;
+			}
+
+			public String getAuthorization() {
+				return authorization;
+			}
+
+			public void setAuthorization(String authorization) {
+				this.authorization = authorization;
+			}
+
+			public String getContentType() {
+				return contentType;
+			}
+
+			public void setContentType(String contentType) {
+				this.contentType = contentType;
+			}
+
+			public String getScope() {
+				return scope;
+			}
+
+			public void setScope(String scope) {
+				this.scope = scope;
+			}
+
+		}
+
+		public static class Delete {
+
+			@NotNull
+			private String url;
+
+			@NotNull
+			private String tierLevel;
+
+			private String authorization;
+
+			@NotNull
+			private String scope;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+
+			public String getTierLevel() {
+				return tierLevel;
+			}
+
+			public void setTierLevel(String tierLevel) {
+				this.tierLevel = tierLevel;
+			}
+
+			public String getAuthorization() {
+				return authorization;
+			}
+
+			public void setAuthorization(String authorization) {
+				this.authorization = authorization;
+			}
+
+			public String getScope() {
+				return scope;
+			}
+
+			public void setScope(String scope) {
+				this.scope = scope;
+			}
+
+		}
+
+		public static class Get {
+
+			@NotNull
+			private String url;
+
+			@NotNull
+			private String tierLevel;
+
+			private String authorization;
+
+			@NotNull
+			private String scope;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+
+			public String getTierLevel() {
+				return tierLevel;
+			}
+
+			public void setTierLevel(String tierLevel) {
+				this.tierLevel = tierLevel;
+			}
+
+			public String getAuthorization() {
+				return authorization;
+			}
+
+			public void setAuthorization(String authorization) {
+				this.authorization = authorization;
+			}
+
+			public String getScope() {
+				return scope;
+			}
+
+			public void setScope(String scope) {
+				this.scope = scope;
+			}
+
+		}
+
+		public static class GetAll {
+
+			@NotNull
+			private String url;
+
+			@NotNull
+			private String tierLevel;
+
+			private String authorization;
+
+			@NotNull
+			private String scope;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+
+			public String getTierLevel() {
+				return tierLevel;
+			}
+
+			public void setTierLevel(String tierLevel) {
+				this.tierLevel = tierLevel;
+			}
+
+			public String getAuthorization() {
+				return authorization;
+			}
+
+			public void setAuthorization(String authorization) {
+				this.authorization = authorization;
+			}
+
+			public String getScope() {
+				return scope;
+			}
+
+			public void setScope(String scope) {
+				this.scope = scope;
+			}
+
+		}
+
 	}
 
 }

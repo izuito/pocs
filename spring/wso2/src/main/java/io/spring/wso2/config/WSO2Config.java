@@ -113,9 +113,7 @@ public class WSO2Config {
 	@Bean
 	public ApiClient apiClient() throws KeyManagementException, NoSuchAlgorithmException {
 		ApiClient ac = new ApiClient();
-		Publisher publisher = properties.getPublisher();
 		ac.setHttpClient(okHttpClient());
-		ac.setBasePath(publisher.getUrl());
 		return ac;
 	}
 	
