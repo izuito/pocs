@@ -1,9 +1,10 @@
-package io.spring.wso2.service;
+package io.spring.wso2.controller;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,6 @@ import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import io.spring.wso2.WSO2Tests;
 import io.spring.wso2.model.RegisterRequest;
 import io.spring.wso2.model.RegisterResponse;
 import io.spring.wso2.model.TokenResponse;
@@ -38,14 +38,15 @@ import io.spring.wso2.properties.WSO2Properties.ThrottlingTier.Get;
 import io.spring.wso2.properties.WSO2Properties.ThrottlingTier.GetAll;
 import io.spring.wso2.properties.WSO2Properties.ThrottlingTier.Update;
 import io.spring.wso2.properties.WSO2Properties.Token;
-import io.swagger.client.model.Tier;
-import io.swagger.client.model.TierList;
+import io.swagger.client.publisher.model.Tier;
+import io.swagger.client.publisher.model.TierList;
 
 @RestController
 @RequestMapping("/throttling/tier")
+@EnableConfigurationProperties(WSO2Properties.class)
 public class ThrottlingTierController {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(WSO2Tests.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ThrottlingTierController.class);
 
 	private final RestTemplate rt;
 
@@ -58,24 +59,7 @@ public class ThrottlingTierController {
 
 	@PostMapping
 	public @ResponseBody ResponseEntity<Tier> createTier(@RequestBody Tier tier) {
-//		Create create = getCreate();
-		ThrottlingTier tt = w.getThrottlingTier();
-		
-		Create create = tt.getCreate();
-		
-		Register r = w.getRegister();
-		
-		RegisterRequest req = toRegisterRequest(r);
-		ResponseEntity<RegisterResponse> rerr = register(req);
-		LOGGER.info("*** Register: {}", rerr);
-		
-		RegisterResponse res = rerr.getBody();
-		ResponseEntity<TokenResponse> retr = token(res.authorization(), create.getScope());
-		LOGGER.info("*** Token: {}", retr);
-		
-		TokenResponse tr = retr.getBody();
-		
-		create.setAuthorization(tr.authorization());
+		Create create = getCreate();
 		
 		MultiValueMap<String, String> headers = headers(create.getAuthorization(), create.getContentType());
 		HttpEntity<Tier> he = new HttpEntity<Tier>(tier, headers);

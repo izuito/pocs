@@ -1,4 +1,4 @@
-package io.spring.wso2.service;
+package io.spring.wso2.controller;
 
 import org.junit.runner.RunWith;
 

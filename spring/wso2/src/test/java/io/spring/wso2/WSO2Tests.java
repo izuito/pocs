@@ -3,39 +3,23 @@ package io.spring.wso2;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.junit.Assert;
-import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import io.spring.wso2.model.RegisterRequest;
-import io.spring.wso2.model.RegisterResponse;
-import io.spring.wso2.model.TokenResponse;
-import io.spring.wso2.properties.ThrottlingTierProperties;
 import io.spring.wso2.properties.WSO2Properties;
-import io.spring.wso2.properties.WSO2Properties.Apim;
-import io.spring.wso2.properties.WSO2Properties.Publisher;
-import io.spring.wso2.properties.WSO2Properties.Publisher.Add;
 import io.swagger.client.ApiClient;
-import io.swagger.client.api.ThrottlingTierCollectionApi;
 import io.swagger.client.model.Tier;
 import io.swagger.client.model.Tier.TierLevelEnum;
 import io.swagger.client.model.Tier.TierPlanEnum;
-import io.swagger.client.model.TierList;
 
 // TODO: Auto-generated Javadoc
 /**

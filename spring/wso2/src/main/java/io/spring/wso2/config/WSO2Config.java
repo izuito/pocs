@@ -38,10 +38,10 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.squareup.okhttp.OkHttpClient;
 
 import io.spring.wso2.properties.WSO2Properties;
-import io.spring.wso2.properties.WSO2Properties.Publisher;
-import io.swagger.client.ApiClient;
-import io.swagger.client.api.ThrottlingTierCollectionApi;
-import io.swagger.client.api.ThrottlingTierIndividualApi;
+import io.swagger.client.publisher.ApiClient;
+import io.swagger.client.publisher.api.APIIndividualApi;
+import io.swagger.client.publisher.api.ThrottlingTierCollectionApi;
+import io.swagger.client.publisher.api.ThrottlingTierIndividualApi;
 
 @Configuration
 @EnableConfigurationProperties(value = { WSO2Properties.class })
@@ -70,6 +70,12 @@ public class WSO2Config {
 	public ThrottlingTierCollectionApi throttlingTierCollectionApi() throws KeyManagementException, NoSuchAlgorithmException {
 		LOGGER.info("*** WSO2Config - ThrottlingTierCollectionApi");
 		return new ThrottlingTierCollectionApi(apiClient());
+	}
+	
+	@Bean
+	public APIIndividualApi apiIndividualApi() throws KeyManagementException, NoSuchAlgorithmException {
+		LOGGER.info("*** WSO2Config - APIIndividualApi");
+		return new APIIndividualApi(apiClient());
 	}
 
 	@Bean
@@ -114,6 +120,7 @@ public class WSO2Config {
 	public ApiClient apiClient() throws KeyManagementException, NoSuchAlgorithmException {
 		ApiClient ac = new ApiClient();
 		ac.setHttpClient(okHttpClient());
+		ac.setBasePath(properties.getPublisherUrl());
 		return ac;
 	}
 	

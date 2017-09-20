@@ -16,7 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.spring.wso2.service.ThrottlingTierController;
+import io.spring.wso2.controller.ThrottlingTierController;
 import io.swagger.client.model.Tier;
 import io.swagger.client.model.Tier.TierLevelEnum;
 import io.swagger.client.model.Tier.TierPlanEnum;

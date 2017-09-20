@@ -12,6 +12,8 @@ import org.springframework.validation.annotation.Validated;
 @Validated
 public class WSO2Properties {
 
+	private String publisherUrl;
+
 	@Valid
 	private Register register = new Register();
 
@@ -20,6 +22,17 @@ public class WSO2Properties {
 
 	@Valid
 	private ThrottlingTier throttlingTier = new ThrottlingTier();
+
+	@Valid
+	private Api api;
+
+	public String getPublisherUrl() {
+		return publisherUrl;
+	}
+
+	public void setPublisherUrl(String publisherUrl) {
+		this.publisherUrl = publisherUrl;
+	}
 
 	public Register getRegister() {
 		return register;
@@ -45,114 +58,12 @@ public class WSO2Properties {
 		this.throttlingTier = throttlingTier;
 	}
 
-	public static class Publisher {
-
-		@NotNull
-		private String url;
-		@NotNull
-		private String granttype;
-		@NotNull
-		private String username;
-		@NotNull
-		private String password;
-		@Valid
-		private Add add;
-
-		public String getUrl() {
-			return url;
-		}
-
-		public void setUrl(String url) {
-			this.url = url;
-		}
-
-		public String getGranttype() {
-			return granttype;
-		}
-
-		public void setGranttype(String granttype) {
-			this.granttype = granttype;
-		}
-
-		public String getUsername() {
-			return username;
-		}
-
-		public void setUsername(String username) {
-			this.username = username;
-		}
-
-		public String getPassword() {
-			return password;
-		}
-
-		public void setPassword(String password) {
-			this.password = password;
-		}
-
-		public Add getAdd() {
-			return add;
-		}
-
-		public void setAdd(Add add) {
-			this.add = add;
-		}
-
-		public static class Add {
-
-			@NotNull
-			private String tierLevel;
-
-			@NotNull
-			private String contentType;
-
-			public String getTierLevel() {
-				return tierLevel;
-			}
-
-			public void setTierLevel(String tierLevel) {
-				this.tierLevel = tierLevel;
-			}
-
-			public String getContentType() {
-				return contentType;
-			}
-
-			public void setContentType(String contentType) {
-				this.contentType = contentType;
-			}
-
-		}
-
-		@Override
-		public String toString() {
-			return "Publisher [url=" + url + "]";
-		}
-
+	public Api getApi() {
+		return api;
 	}
 
-	public static class Apim {
-
-		private String tierView;
-
-		private String tierManage;
-
-		public String getTierView() {
-			return tierView;
-		}
-
-		public void setTierView(String tierView) {
-			this.tierView = tierView;
-		}
-
-		public String getTierManage() {
-			return tierManage;
-		}
-
-		public void setTierManage(String tierManage) {
-			this.tierManage = tierManage;
-		}
-
+	public void setApi(Api api) {
+		this.api = api;
 	}
 
 	public static class Register {
@@ -296,6 +207,11 @@ public class WSO2Properties {
 
 		public void setPassword(String password) {
 			this.password = password;
+		}
+
+		public String authorization() {
+			String key = username + ":" + password;
+			return Base64.getEncoder().encodeToString(key.getBytes());
 		}
 
 	}
@@ -602,6 +518,52 @@ public class WSO2Properties {
 
 			public void setScope(String scope) {
 				this.scope = scope;
+			}
+
+		}
+
+	}
+
+	public static class Api {
+
+		private Get get;
+
+		public Get getGet() {
+			return get;
+		}
+
+		public void setGet(Get get) {
+			this.get = get;
+		}
+
+		public static class Get {
+
+			private String url;
+			private String scope;
+			private String authorization;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+
+			public String getScope() {
+				return scope;
+			}
+
+			public void setScope(String scope) {
+				this.scope = scope;
+			}
+
+			public String getAuthorization() {
+				return authorization;
+			}
+
+			public void setAuthorization(String authorization) {
+				this.authorization = authorization;
 			}
 
 		}

@@ -22,7 +22,8 @@
 		<dependency>
 			<groupId>io.swagger</groupId>
 			<artifactId>swagger-java-client</artifactId>
-			<version>1.0.0</version>
+			<version>1.0.2</version>
+			<scope>compile</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
@@ -65,4 +66,5 @@
 			</plugin>
 		</plugins>
 	</build>
+	
 </project>

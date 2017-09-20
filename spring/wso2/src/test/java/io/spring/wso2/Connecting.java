@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.spring.wso2.service.WSO2Service;
+import io.spring.wso2.controller.WSO2Service;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { WSO2App.class })
