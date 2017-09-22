@@ -56,5 +56,5 @@ public class RegisterRequest {
 	public void setSaasApp(boolean saasApp) {
 		this.saasApp = saasApp;
 	}
-
+	
 }

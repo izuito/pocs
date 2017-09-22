@@ -1,13 +1,13 @@
 package io.spring.wso2.controller;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -19,22 +19,23 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.Criteria;
+import com.jayway.jsonpath.Filter;
+import com.jayway.jsonpath.JsonPath;
 
 import io.spring.wso2.model.RegisterRequest;
 import io.spring.wso2.model.RegisterResponse;
 import io.spring.wso2.model.TokenResponse;
 import io.spring.wso2.properties.WSO2Properties;
-import io.spring.wso2.properties.WSO2Properties.Api;
+import io.spring.wso2.properties.WSO2Properties.Api.Create;
 import io.spring.wso2.properties.WSO2Properties.Api.Get;
 import io.spring.wso2.properties.WSO2Properties.Register;
-import io.spring.wso2.properties.WSO2Properties.Token;
-import io.swagger.client.publisher.ApiClient;
+import io.spring.wso2.service.WSO2AccessService;
 import io.swagger.client.publisher.ApiException;
-import io.swagger.client.publisher.api.APIIndividualApi;
 import io.swagger.client.publisher.model.API;
 import io.swagger.client.publisher.model.APIList;
-import io.swagger.client.publisher.model.APIObject1;
 
 @RestController
 @RequestMapping("/apis")
@@ -44,102 +45,61 @@ public class ApiController {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ApiController.class);
 
 	private final RestTemplate rt;
-
 	private final WSO2Properties w;
+	private final WSO2AccessService was;
+	private final ObjectMapper om;
 
-	@Autowired
-	private APIIndividualApi aia;
-
-	@Autowired
-	private ApiClient ac;
-
-	public ApiController(RestTemplate rt, WSO2Properties w) {
+	public ApiController(RestTemplate rt, WSO2Properties w, WSO2AccessService was, ObjectMapper om) {
 		this.rt = rt;
 		this.w = w;
+		this.was = was;
+		this.om = om;
+	}
+
+	@PostMapping
+	public @ResponseBody ResponseEntity<API> createApi(@RequestBody API api) {
+		Create create = w.getApi().getCreate();
+		HttpEntity<API> he = getHttpEntity(create);
+		return rt.exchange(create.getUrl(), HttpMethod.POST, he, API.class);
 	}
 
 	@GetMapping("/{apiId}")
-	public @ResponseBody ResponseEntity<APIObject1> getApi(@PathVariable("apiId") String apiId) throws ApiException {
-		Get get = getGet();
-
-		ac.addDefaultHeader("Authorization", get.getAuthorization());
-
-		 String url = get.getUrl() + "/" + apiId;
-		
-		 MultiValueMap<String, String> headers =
-		 headers(get.getAuthorization());
-		 HttpEntity<API> he = new HttpEntity<API>(headers);
-		
-		 ResponseEntity<String> re = rt.exchange(url, HttpMethod.GET, he, String.class);
-		 
-		 LOGGER.info("*** Result: {}", re);
-		 
-		APIObject1 api = null;
-		String accept = MediaType.APPLICATION_JSON_VALUE;
-		String ifNoneMatch = null;
-		String ifModifiedSince = null;
-
-		api = aia.apisApiIdGet(apiId, accept, ifNoneMatch, ifModifiedSince);
-
-		return new ResponseEntity<>(api, HttpStatus.OK);
+	public @ResponseBody ResponseEntity<Object> getApi(@PathVariable("apiId") String apiId)
+			throws ApiException, IOException {
+		ResponseEntity<APIList> re = getSearchApis();
+		APIList body = re.getBody();
+		String json = om.writeValueAsString(body);
+		Filter filters = Filter.filter(Criteria.where("id").eq(apiId));
+		String jsonPath = "$.list[?]";
+		Object o = JsonPath.read(json, jsonPath, filters);
+		return new ResponseEntity<>(o, HttpStatus.OK);
 	}
 
 	@GetMapping
-	public @ResponseBody ResponseEntity<APIList> getAllApi() {
-		Get get = getGet();
-
-		MultiValueMap<String, String> headers = headers(get.getAuthorization(), MediaType.APPLICATION_JSON_VALUE);
-		HttpEntity<API> he = new HttpEntity<API>(headers);
-
+	public @ResponseBody ResponseEntity<APIList> getSearchApis() {
+		ResponseEntity<RegisterResponse> rerr = was.register();
+		RegisterResponse rr = rerr.getBody();
+		Get get = w.getApi().getGet();
+		ResponseEntity<TokenResponse> retr = was.token(rr.authorization(), get.getScope());
+		TokenResponse tr = retr.getBody();
+		get.setAuthorization(tr.authorization());
+		HttpEntity<API> he = getHttpEntity(get);
 		return rt.exchange(get.getUrl(), HttpMethod.GET, he, APIList.class);
 	}
 
-	@PostMapping(value = "/register")
-	public @ResponseBody ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
-		Register r = w.getRegister();
-		String authorization = "Basic " + r.authorization();
-		MultiValueMap<String, String> mh = headers(authorization, MediaType.APPLICATION_JSON_VALUE);
-		HttpEntity<RegisterRequest> he = new HttpEntity<>(registerRequest, mh);
-		return rt.exchange(r.getUrl(), HttpMethod.POST, he, RegisterResponse.class);
+	private HttpEntity<API> getHttpEntity(Create create) {
+		MultiValueMap<String, String> mh = new LinkedMultiValueMap<>();
+		mh.add("Authorization", "Bearer " + create.getAuthorization());
+		return new HttpEntity<API>(mh);
 	}
-
-	@PostMapping(value = "/token/authorization/{authorization}/scope/{scope}")
-	public ResponseEntity<TokenResponse> token(@PathVariable("authorization") String authorization,
-			@PathVariable("scope") String scope) {
-		Token t = w.getToken();
-		UriComponentsBuilder uri = UriComponentsBuilder.fromUriString(t.getUrl())
-				.queryParam("grant_type", t.getGrantType()).queryParam("username", t.getUsername())
-				.queryParam("password", t.getPassword()).queryParam("scope", scope);
-		MultiValueMap<String, String> mh = headers("Basic " + authorization);
-		return rt.exchange(uri.toUriString(), HttpMethod.POST, new HttpEntity<>(mh), TokenResponse.class);
+	
+	private HttpEntity<API> getHttpEntity(Get get) {
+		MultiValueMap<String, String> mh = new LinkedMultiValueMap<>();
+		mh.add("Authorization", "Basic " + get.getAuthorization());
+		mh.add("Content-Type", get.getContentType());
+		return new HttpEntity<API>(mh);
 	}
-
-	public Get getGet() {
-		Api api = w.getApi();
-		Get get = api.getGet();
-
-		ResponseEntity<RegisterResponse> rerr = register(toRegisterRequest(w.getRegister()));
-		RegisterResponse rr = rerr.getBody();
-		ResponseEntity<TokenResponse> retr = token(rr.authorization(), get.getScope());
-		TokenResponse tr = retr.getBody();
-		get.setAuthorization(tr.authorization());
-		LOGGER.info("*** Authorization: {}", get.getAuthorization());
-		return get;
-	}
-
-	public MultiValueMap<String, String> headers(String authorization, String contentType) {
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.add("Authorization", authorization);
-		headers.add("Content-Type", contentType);
-		return headers;
-	}
-
-	public MultiValueMap<String, String> headers(String authorization) {
-		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
-		headers.add("Authorization", authorization);
-		return headers;
-	}
-
+	
 	public RegisterRequest toRegisterRequest(Register r) {
 		RegisterRequest rr = new RegisterRequest();
 		rr.setCallbackUrl(r.getCallbackUrl());

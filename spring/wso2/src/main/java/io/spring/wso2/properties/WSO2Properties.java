@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @ConfigurationProperties(value = "wso2")
 @Validated
@@ -75,9 +76,9 @@ public class WSO2Properties {
 		private String owner;
 		private String grantType;
 		private boolean saasApp;
-		private String authorization;
 		private String username;
 		private String password;
+		private String contentType;
 
 		public String getUrl() {
 			return url;
@@ -136,20 +137,8 @@ public class WSO2Properties {
 		}
 
 		public String getAuthorization() {
-			return authorization;
-		}
-
-		public void setAuthorization(String authorization) {
-			this.authorization = authorization;
-		}
-
-		/**
-		 * Base64 Encoder String no campo Authorization
-		 * 
-		 * @return String
-		 */
-		public String authorization() {
-			return Base64.getEncoder().encodeToString(getAuthorization().getBytes());
+			String key = getUsername() + ":" + getPassword();
+			return Base64.getEncoder().encodeToString(key.getBytes());
 		}
 
 		public String getUsername() {
@@ -168,6 +157,14 @@ public class WSO2Properties {
 			this.password = password;
 		}
 
+		public String getContentType() {
+			return contentType;
+		}
+
+		public void setContentType(String contentType) {
+			this.contentType = contentType;
+		}
+
 	}
 
 	public static class Token {
@@ -176,6 +173,8 @@ public class WSO2Properties {
 		private String grantType;
 		private String username;
 		private String password;
+		private String scope;
+		private String authorization;
 
 		public String getUrl() {
 			return url;
@@ -209,9 +208,32 @@ public class WSO2Properties {
 			this.password = password;
 		}
 
+		public String getScope() {
+			return scope;
+		}
+
+		public void setScope(String scope) {
+			this.scope = scope;
+		}
+
+		public String getAuthorization() {
+			return authorization;
+		}
+
+		public void setAuthorization(String authorization) {
+			this.authorization = authorization;
+		}
+
 		public String authorization() {
 			String key = username + ":" + password;
 			return Base64.getEncoder().encodeToString(key.getBytes());
+		}
+
+		public String uri() {
+			UriComponentsBuilder uri = UriComponentsBuilder.fromUriString(getUrl())
+					.queryParam("grant_type", getGrantType()).queryParam("username", getUsername())
+					.queryParam("password", getPassword()).queryParam("scope", getScope());
+			return uri.toUriString();
 		}
 
 	}
@@ -526,7 +548,17 @@ public class WSO2Properties {
 
 	public static class Api {
 
-		private Get get;
+		private Create create = new Create();
+
+		private Get get = new Get();
+
+		public Create getCreate() {
+			return create;
+		}
+
+		public void setCreate(Create create) {
+			this.create = create;
+		}
 
 		public Get getGet() {
 			return get;
@@ -536,8 +568,7 @@ public class WSO2Properties {
 			this.get = get;
 		}
 
-		public static class Get {
-
+		public static class Create {
 			private String url;
 			private String scope;
 			private String authorization;
@@ -564,6 +595,47 @@ public class WSO2Properties {
 
 			public void setAuthorization(String authorization) {
 				this.authorization = authorization;
+			}
+
+		}
+
+		public static class Get {
+
+			private String url;
+			private String scope;
+			private String authorization;
+			private String contentType;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+
+			public String getScope() {
+				return scope;
+			}
+
+			public void setScope(String scope) {
+				this.scope = scope;
+			}
+
+			public String getAuthorization() {
+				return authorization;
+			}
+
+			public void setAuthorization(String authorization) {
+				this.authorization = authorization;
+			}
+
+			public String getContentType() {
+				return contentType;
+			}
+
+			public void setContentType(String contentType) {
+				this.contentType = contentType;
 			}
 
 		}

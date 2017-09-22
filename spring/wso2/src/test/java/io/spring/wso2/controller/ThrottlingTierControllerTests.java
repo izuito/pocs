@@ -20,13 +20,13 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.spring.wso2.controller.ThrottlingTierController;
-import io.swagger.client.model.Tier;
-import io.swagger.client.model.Tier.TierLevelEnum;
-import io.swagger.client.model.Tier.TierPlanEnum;
+import io.swagger.client.publisher.model.Tier;
+import io.swagger.client.publisher.model.Tier.TierLevelEnum;
+import io.swagger.client.publisher.model.Tier.TierPlanEnum;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = ThrottlingTierController.class, secure = false)

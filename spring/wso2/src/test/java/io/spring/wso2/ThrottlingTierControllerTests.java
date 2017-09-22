@@ -17,10 +17,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import io.spring.wso2.controller.ThrottlingTierController;
-import io.swagger.client.model.Tier;
-import io.swagger.client.model.Tier.TierLevelEnum;
-import io.swagger.client.model.Tier.TierPlanEnum;
-import io.swagger.client.model.TierList;
+import io.swagger.client.publisher.model.Tier;
+import io.swagger.client.publisher.model.Tier.TierLevelEnum;
+import io.swagger.client.publisher.model.Tier.TierPlanEnum;
+import io.swagger.client.publisher.model.TierList;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = { WSO2App.class })

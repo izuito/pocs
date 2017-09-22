@@ -130,7 +130,7 @@ public class ThrottlingTierController {
 	@PostMapping(value = "/register")
 	public @ResponseBody ResponseEntity<RegisterResponse> register(@RequestBody RegisterRequest registerRequest) {
 		Register r = w.getRegister();
-		String authorization = "Basic " + r.authorization();
+		String authorization = "Basic " + r.getAuthorization();
 		MultiValueMap<String, String> mh = headers(authorization, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<RegisterRequest> he = new HttpEntity<>(registerRequest, mh);
 		return rt.exchange(r.getUrl(), HttpMethod.POST, he, RegisterResponse.class);
@@ -204,7 +204,7 @@ public class ThrottlingTierController {
 
 	public ResponseEntity<RegisterResponse> executeRegister(Register r) {
 		RegisterRequest rr = toRegisterRequest(r);
-		String authorization = "Basic " + r.authorization();
+		String authorization = "Basic " + r.getAuthorization();
 		MultiValueMap<String, String> mh = headers(authorization, MediaType.APPLICATION_JSON_VALUE);
 		HttpEntity<RegisterRequest> he = new HttpEntity<>(rr, mh);
 		return rt.exchange(r.getUrl(), HttpMethod.POST, he, RegisterResponse.class);

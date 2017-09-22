@@ -1,0 +1,25 @@
+{
+  "count": 2,
+  "next": "",
+  "previous": "",
+  "list": [
+    {
+      "id": "b72205b2-785d-4b65-bb98-b2fc287a87b8",
+      "name": "sva",
+      "description": null,
+      "context": "/apis/sva",
+      "version": "1.0",
+      "provider": "admin",
+      "status": "PUBLISHED"
+    },
+    {
+      "id": "34a73c55-d1b5-494f-97d8-704dc07b6e2c",
+      "name": "teste",
+      "description": null,
+      "context": "/teste",
+      "version": "1",
+      "provider": "admin",
+      "status": "PUBLISHED"
+    }
+  ]
+}

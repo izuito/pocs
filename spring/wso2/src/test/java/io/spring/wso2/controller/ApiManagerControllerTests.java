@@ -1,12 +1,10 @@
 package io.spring.wso2.controller;
 
-import static org.junit.Assert.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -17,29 +15,20 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 @RunWith(SpringRunner.class)
-@WebMvcTest(value = ApiController.class, secure = false)
+@WebMvcTest(value = ApiManagerController.class, secure = false)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ApiControllerTests {
+public class ApiManagerControllerTests {
 
 	@Autowired
 	private MockMvc mock;
 	
-	@Ignore
 	@Test
-	public void testGet() throws Exception {
-		String apiId = "bbee4f64-ec81-452d-87b7-cbc030d6a3c8";
+	public void testToken() throws Exception {
+		String scope = "apim:subscribe";
 		
-		MockHttpServletRequestBuilder msrb = get("/apis/" + apiId);
+		MockHttpServletRequestBuilder msrb = post("/api/am/token/scope/" + scope);
 
 		mock.perform(msrb).andExpect(status().isOk()).andDo(print()).andReturn();		
-	}
-	
-//	@Ignore
-	@Test
-	public void test1GetAll() throws Exception {
-		MockHttpServletRequestBuilder msrb = get("/apis");
-
-		mock.perform(msrb).andExpect(status().isOk()).andDo(print()).andReturn();
 	}
 	
 }
