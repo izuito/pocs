@@ -3,17 +3,13 @@ package io.spring.wso2.controller;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import io.spring.wso2.model.RegisterRequest;
 import io.spring.wso2.model.RegisterResponse;
@@ -53,12 +49,11 @@ public class ApiManagerController {
 	}
 
 	@PostMapping("/token/scope/{scope}")
-	public ResponseEntity<TokenReturn> token(String scope) {
+	public ResponseEntity<TokenResponse> token(String scope) {
 		ResponseEntity<RegisterResponse> rerr = register();
 		RegisterResponse rr = rerr.getBody();
 		ResponseEntity<TokenResponse> retr = token(rr.authorization(), scope);
-		TokenReturn tr = mm.map(retr.getBody(), TokenReturn.class);
-		return new ResponseEntity<ApiManagerController.TokenReturn>(tr, HttpStatus.OK);
+		return token(rr.authorization(), scope);
 	}
 
 	private HttpEntity<RegisterRequest> getHttpEntity(Register r) {
@@ -73,29 +68,6 @@ public class ApiManagerController {
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.add("Authorization", "Basic " + token.getAuthorization());
 		return new HttpEntity<>(headers);
-	}
-
-	private static class TokenReturn {
-		
-		private String tokenType;
-		private String accessToken;
-
-		public String getTokenType() {
-			return tokenType;
-		}
-
-		public void setTokenType(String tokenType) {
-			this.tokenType = tokenType;
-		}
-
-		public String getAccessToken() {
-			return accessToken;
-		}
-
-		public void setAccessToken(String accessToken) {
-			this.accessToken = accessToken;
-		}
-
 	}
 
 }
