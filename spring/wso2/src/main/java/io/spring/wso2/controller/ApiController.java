@@ -1,7 +1,10 @@
 package io.spring.wso2.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -36,6 +39,7 @@ import io.spring.wso2.service.WSO2AccessService;
 import io.swagger.client.publisher.ApiException;
 import io.swagger.client.publisher.model.API;
 import io.swagger.client.publisher.model.APIList;
+import net.minidev.json.JSONArray;
 
 @RestController
 @RequestMapping("/apis")
@@ -48,12 +52,14 @@ public class ApiController {
 	private final WSO2Properties w;
 	private final WSO2AccessService was;
 	private final ObjectMapper om;
+	private final ModelMapper mm;
 
-	public ApiController(RestTemplate rt, WSO2Properties w, WSO2AccessService was, ObjectMapper om) {
+	public ApiController(RestTemplate rt, WSO2Properties w, WSO2AccessService was, ObjectMapper om, ModelMapper mm) {
 		this.rt = rt;
 		this.w = w;
 		this.was = was;
 		this.om = om;
+this.mm = mm;
 	}
 
 	@PostMapping
@@ -64,15 +70,21 @@ public class ApiController {
 	}
 
 	@GetMapping("/{apiId}")
-	public @ResponseBody ResponseEntity<Object> getApi(@PathVariable("apiId") String apiId)
+	public @ResponseBody ResponseEntity<List<API>> getApi(@PathVariable("apiId") String apiId)
 			throws ApiException, IOException {
 		ResponseEntity<APIList> re = getSearchApis();
 		APIList body = re.getBody();
 		String json = om.writeValueAsString(body);
 		Filter filters = Filter.filter(Criteria.where("id").eq(apiId));
 		String jsonPath = "$.list[?]";
-		Object o = JsonPath.read(json, jsonPath, filters);
-		return new ResponseEntity<>(o, HttpStatus.OK);
+		JSONArray o = JsonPath.read(json, jsonPath, filters);
+		ArrayList<API> apis = new ArrayList<>();
+		o.forEach(c-> {
+			API e = mm.map(c, API.class);
+			apis.add(e);
+		});
+		LOGGER.info("*** Filter: {}", o);
+		return new ResponseEntity<>(apis, HttpStatus.OK);
 	}
 
 	@GetMapping

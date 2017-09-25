@@ -27,6 +27,9 @@ public class WSO2Properties {
 	@Valid
 	private Api api;
 
+	@Valid
+	private Application application = new Application();
+
 	public String getPublisherUrl() {
 		return publisherUrl;
 	}
@@ -65,6 +68,14 @@ public class WSO2Properties {
 
 	public void setApi(Api api) {
 		this.api = api;
+	}
+
+	public Application getApplication() {
+		return application;
+	}
+
+	public void setApplication(Application application) {
+		this.application = application;
 	}
 
 	public static class Register {
@@ -636,6 +647,43 @@ public class WSO2Properties {
 
 			public void setContentType(String contentType) {
 				this.contentType = contentType;
+			}
+
+		}
+
+	}
+
+	public static class Application {
+
+		private GetAll getAll = new GetAll();
+
+		public GetAll getGetAll() {
+			return getAll;
+		}
+
+		public void setGet(GetAll getAll) {
+			this.getAll = getAll;
+		}
+
+		public static class GetAll {
+
+			private String url;
+			private String scope;
+
+			public String getUrl() {
+				return url;
+			}
+
+			public void setUrl(String url) {
+				this.url = url;
+			}
+
+			public String getScope() {
+				return scope;
+			}
+
+			public void setScope(String scope) {
+				this.scope = scope;
 			}
 
 		}

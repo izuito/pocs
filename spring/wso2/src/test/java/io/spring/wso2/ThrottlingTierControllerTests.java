@@ -23,7 +23,7 @@ import io.swagger.client.publisher.model.Tier.TierPlanEnum;
 import io.swagger.client.publisher.model.TierList;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { WSO2App.class })
+@SpringBootTest(classes = { Wso2App.class })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ThrottlingTierControllerTests {
 

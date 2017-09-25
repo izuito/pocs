@@ -13,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import io.spring.wso2.controller.ApiManagerController;
 import io.spring.wso2.model.RegisterResponse;
 import io.spring.wso2.model.TokenResponse;
 import io.spring.wso2.properties.WSO2Properties;
@@ -37,9 +38,14 @@ public class Wso2Tests {
 	@Autowired
 	private ApiService as;
 	
+	@Autowired
+	private ApiManagerController amc;
+	
 	@Test
 	public void test1Register() throws Exception {
-		ResponseEntity<RegisterResponse> rerr = was.register();
+//		ResponseEntity<RegisterResponse> rerr = was.register();
+		
+		ResponseEntity<RegisterResponse> rerr = amc.register();
 		
 		LOGGER.info("*** {}", rerr);
 		
@@ -48,12 +54,14 @@ public class Wso2Tests {
 	
 	@Test
 	public void test2Token() throws Exception {
-		ResponseEntity<RegisterResponse> rerr = was.register();
-		RegisterResponse rr = rerr.getBody();
-		
 		Get get = w.getApi().getGet();
 		
-		ResponseEntity<TokenResponse> retr = was.token(rr.authorization(), get.getScope());
+//		ResponseEntity<RegisterResponse> rerr = was.register();
+//		RegisterResponse rr = rerr.getBody();
+//		ResponseEntity<TokenResponse> retr = was.token(rr.authorization(), get.getScope());
+//		TokenResponse tr = retr.getBody();
+		
+		ResponseEntity<TokenResponse> retr = amc.token(get.getScope());
 		
 		LOGGER.info("*** {}", retr);
 		
@@ -62,12 +70,13 @@ public class Wso2Tests {
 	
 	@Test
 	public void test3SearchApis() throws Exception {
-		ResponseEntity<RegisterResponse> rerr = was.register();
-		RegisterResponse rr = rerr.getBody();
-		
 		Get get = w.getApi().getGet();
 		
-		ResponseEntity<TokenResponse> retr = was.token(rr.authorization(), get.getScope());
+//		ResponseEntity<RegisterResponse> rerr = was.register();
+//		RegisterResponse rr = rerr.getBody();
+//		ResponseEntity<TokenResponse> retr = was.token(rr.authorization(), get.getScope());
+		
+		ResponseEntity<TokenResponse> retr = amc.token(get.getScope());		
 		TokenResponse tr = retr.getBody();
 		
 		ResponseEntity<APIList> real = as.getSearchApis(tr.authorization(), get.getScope());
@@ -79,13 +88,15 @@ public class Wso2Tests {
 	
 	@Test
 	public void test4GetApi() throws Exception {
-		ResponseEntity<RegisterResponse> rerr = was.register();
-		RegisterResponse rr = rerr.getBody();
-		
 		Get get = w.getApi().getGet();
-
-		ResponseEntity<TokenResponse> retr = was.token(rr.authorization(), get.getScope());
-		TokenResponse tr = retr.getBody();
+		
+//		ResponseEntity<RegisterResponse> rerr = was.register();
+//		RegisterResponse rr = rerr.getBody();
+//		ResponseEntity<TokenResponse> retr = was.token(rr.authorization(), get.getScope());
+//		TokenResponse tr = retr.getBody();
+		
+		ResponseEntity<TokenResponse> retr = amc.token(get.getScope());		
+		TokenResponse tr = retr.getBody();		
 		
 		String apiId = "bbee4f64-ec81-452d-87b7-cbc030d6a3c8";
 		ResponseEntity<Object> reo = as.getApi(apiId, tr.authorization(), get.getContentType());

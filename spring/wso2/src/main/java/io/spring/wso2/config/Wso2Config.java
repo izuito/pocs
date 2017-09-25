@@ -1,5 +1,14 @@
 package io.spring.wso2.config;
 
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.squareup.okhttp.OkHttpClient;
+import io.spring.wso2.properties.WSO2Properties;
+import io.swagger.client.publisher.ApiClient;
+import io.swagger.client.publisher.api.APIIndividualApi;
+import io.swagger.client.publisher.api.ThrottlingTierCollectionApi;
+import io.swagger.client.publisher.api.ThrottlingTierIndividualApi;
 import java.security.KeyManagementException;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -7,7 +16,6 @@ import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.List;
-
 import javax.annotation.PostConstruct;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
@@ -15,7 +23,6 @@ import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
-
 import org.apache.http.conn.ssl.NoopHostnameVerifier;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -32,27 +39,22 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.client.RestTemplate;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.squareup.okhttp.OkHttpClient;
-
-import io.spring.wso2.properties.WSO2Properties;
-import io.swagger.client.publisher.ApiClient;
-import io.swagger.client.publisher.api.APIIndividualApi;
-import io.swagger.client.publisher.api.ThrottlingTierCollectionApi;
-import io.swagger.client.publisher.api.ThrottlingTierIndividualApi;
+import springfox.documentation.builders.PathSelectors;
+import springfox.documentation.builders.RequestHandlerSelectors;
+import springfox.documentation.spi.DocumentationType;
+import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
 @Configuration
 @EnableConfigurationProperties(value = { WSO2Properties.class })
-public class WSO2Config {
+@EnableSwagger2
+public class Wso2Config {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(WSO2Config.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(Wso2Config.class);
 
 	private WSO2Properties properties;
 
-	public WSO2Config(WSO2Properties properties) {
+	public Wso2Config(WSO2Properties properties) {
 		this.properties = properties;
 	}
 
@@ -60,24 +62,26 @@ public class WSO2Config {
 	public void name() {
 		LOGGER.info("*** {}", properties);
 	}
-	
+
 	@Bean
 	public ModelMapper modelMapper() {
 		return new ModelMapper();
 	}
 
 	@Bean
-	public ThrottlingTierIndividualApi throttlingTierIndividualApi() throws KeyManagementException, NoSuchAlgorithmException {
+	public ThrottlingTierIndividualApi throttlingTierIndividualApi()
+			throws KeyManagementException, NoSuchAlgorithmException {
 		LOGGER.info("*** WSO2Config - ThrottlingTierIndividualApi");
 		return new ThrottlingTierIndividualApi(apiClient());
 	}
 
 	@Bean
-	public ThrottlingTierCollectionApi throttlingTierCollectionApi() throws KeyManagementException, NoSuchAlgorithmException {
+	public ThrottlingTierCollectionApi throttlingTierCollectionApi()
+			throws KeyManagementException, NoSuchAlgorithmException {
 		LOGGER.info("*** WSO2Config - ThrottlingTierCollectionApi");
 		return new ThrottlingTierCollectionApi(apiClient());
 	}
-	
+
 	@Bean
 	public APIIndividualApi apiIndividualApi() throws KeyManagementException, NoSuchAlgorithmException {
 		LOGGER.info("*** WSO2Config - APIIndividualApi");
@@ -129,7 +133,16 @@ public class WSO2Config {
 		ac.setBasePath(properties.getPublisherUrl());
 		return ac;
 	}
-	
+
+	@Bean
+	public Docket api() {                
+	    return new Docket(DocumentationType.SWAGGER_2)          
+	      .select()                                       
+	      .apis(RequestHandlerSelectors.basePackage("io.spring.wso2.controller"))
+	      .paths(PathSelectors.any())                     
+	      .build();
+	}
+
 	public OkHttpClient okHttpClient() throws NoSuchAlgorithmException, KeyManagementException {
 		OkHttpClient client = new OkHttpClient();
 		final TrustManager[] trustAllCerts = new TrustManager[] { new X509TrustManager() {
@@ -154,12 +167,12 @@ public class WSO2Config {
 		// Create an ssl socket factory with our all-trusting manager
 		final SSLSocketFactory sslSocketFactory = sslContext.getSocketFactory();
 		client.setSslSocketFactory(sslSocketFactory);
-        client.setHostnameVerifier(new HostnameVerifier() {
-            @Override
-            public boolean verify(String hostname, SSLSession session) {
-                return true;
-            }
-        });
+		client.setHostnameVerifier(new HostnameVerifier() {
+			@Override
+			public boolean verify(String hostname, SSLSession session) {
+				return true;
+			}
+		});
 		return client;
 	}
 

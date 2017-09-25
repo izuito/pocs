@@ -1,14 +1,21 @@
 package io.spring.wso2.controller;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import io.spring.wso2.model.RegisterRequest;
@@ -21,6 +28,8 @@ import io.spring.wso2.properties.WSO2Properties.Token;
 @RestController
 @RequestMapping("/api/am")
 public class ApiManagerController {
+	
+	private static final Logger LOGGER = LoggerFactory.getLogger(ApiManagerController.class);
 
 	private final RestTemplate rt;
 	private final WSO2Properties wp;
@@ -40,7 +49,7 @@ public class ApiManagerController {
 	}
 
 	@PostMapping("/token/authorization/{authorization}/scope/{scope}")
-	public ResponseEntity<TokenResponse> token(String authorization, String scope) {
+	public ResponseEntity<TokenResponse> token(@PathVariable("authorization") String authorization, @PathVariable("scope") String scope) {
 		Token token = wp.getToken();
 		token.setAuthorization(authorization);
 		token.setScope(scope);
@@ -49,11 +58,18 @@ public class ApiManagerController {
 	}
 
 	@PostMapping("/token/scope/{scope}")
-	public ResponseEntity<TokenResponse> token(String scope) {
+	public ResponseEntity<TokenResponse> token(@PathVariable("scope") String scope) {
 		ResponseEntity<RegisterResponse> rerr = register();
 		RegisterResponse rr = rerr.getBody();
+		LOGGER.info("*** {}", rerr);
 		ResponseEntity<TokenResponse> retr = token(rr.authorization(), scope);
-		return token(rr.authorization(), scope);
+		LOGGER.info("*** {}", retr);
+		return retr;
+	}
+
+	@ExceptionHandler(value = { HttpClientErrorException.class })
+	public ResponseEntity<?> error(HttpServletRequest hsr, HttpClientErrorException ex) {
+		return new ResponseEntity<>(ex.getResponseBodyAsString(), ex.getStatusCode());
 	}
 
 	private HttpEntity<RegisterRequest> getHttpEntity(Register r) {
