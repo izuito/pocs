@@ -1,9 +1,12 @@
 package io.spring.wso2;
 
+import static org.junit.Assert.*;
+
 import java.util.List;
 
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -58,7 +61,10 @@ public class WSO2FlowTests {
 
 	@Autowired
 	private ApplicationController ac;
+	
+	private String token;
 
+	@Ignore
 	@Test
 	public void testApplicationList() throws Exception {
 		ResponseEntity<ApplicationList> rea = applications();
@@ -72,6 +78,7 @@ public class WSO2FlowTests {
 		}
 	}
 
+	@Ignore
 	@Test
 	public void testName() throws Exception {
 		ResponseEntity<APIList> real = apis();
@@ -89,10 +96,30 @@ public class WSO2FlowTests {
 		}
 	}
 
+	@Test
+	public void testToken() throws Exception {
+		String scope = "apim:api_view";
+		token = getAccessToken(scope);
+		LOGGER.info("*** {}", token);
+		Assert.assertEquals(HttpStatus.OK, retr.getStatusCode());
+		Assert.assertNotNull(token);
+	}
+	
+	@Test
+	public void testApis() throws Exception {
+		ResponseEntity<APIList> apis = apis();
+		
+		LOGGER.info(">>> {}", apis);
+		
+		Assert.assertEquals(HttpStatus.OK, apis.getStatusCode());
+	}
+	
 	public String getAccessToken(String scope) {
-		String url = "http://localhost:8080/api/am/token/scope/" + scope;
+		String url = "http://localhost:8080/apim/token?scope=" + scope;
 		retr = rt.postForEntity(url, HttpEntity.EMPTY, TokenResponse.class);
-		return retr.getBody().getAccessToken();
+		LOGGER.info(">>> AccessToken: {}", retr);
+		TokenResponse tr = retr.getBody();
+		return tr.getAccessToken();
 	}
 
 	public ResponseEntity<ApplicationList> applications() {
@@ -104,12 +131,12 @@ public class WSO2FlowTests {
 		String url = "http://127.0.0.1:8080/applications/" + applicationId;
 		return rt.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, Application2.class);
 	}
-	
+
 	public ResponseEntity<APIList> apis() {
 		String url = "http://127.0.0.1:8080/apis";
 		return rt.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, APIList.class);
 	}
-	
+
 	public ResponseEntity<List> apis(String id) {
 		String url = "http://127.0.0.1:8080/apis/" + id;
 		return rt.exchange(url, HttpMethod.GET, HttpEntity.EMPTY, List.class);

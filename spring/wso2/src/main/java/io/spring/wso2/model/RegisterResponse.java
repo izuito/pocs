@@ -68,9 +68,9 @@ public class RegisterResponse {
 		this.appOwner = appOwner;
 	}
 
-	public String authorization() {
-		String code = clientId + ":" + clientSecret;
-		return Base64.getEncoder().encodeToString(code.getBytes());
+	public String getAuthorization() {
+		String encode = getClientId() + ":" + getClientSecret();
+		return Base64.getEncoder().encodeToString(encode.getBytes());
 	}
 
 	@Override
