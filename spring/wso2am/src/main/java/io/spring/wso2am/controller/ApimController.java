@@ -17,6 +17,7 @@ import io.spring.wso2am.dto.RegisterResponse;
 import io.spring.wso2am.dto.TokenResponse;
 import io.spring.wso2am.properties.ApimProperties;
 import io.spring.wso2am.properties.ApimProperties.Register;
+import io.spring.wso2am.properties.ApimProperties.Register.Parameter;
 import io.spring.wso2am.properties.ApimProperties.Token;
 
 @RestController
@@ -35,24 +36,32 @@ public class ApimController {
 	@PostMapping(value = { "/register" })
 	public ResponseEntity<RegisterResponse> register() {
 		Register r = ap.getRegister();
+		Parameter p = r.getParameter();
 		HttpEntity<RegisterRequest> he = getHttpEntity(r);
-		return rt.exchange(r.getUrl(), HttpMethod.POST, he, RegisterResponse.class);
+		return rt.exchange(p.getUrl(), HttpMethod.POST, he, RegisterResponse.class);
 	}
 
 	@PostMapping(value = { "/token" }, params = { "scope" })
 	public ResponseEntity<TokenResponse> token(@RequestParam("scope") String scope) {
+		ResponseEntity<RegisterResponse> r = register();
+		RegisterResponse rr = r.getBody();
+		return token(rr.getAuthorization(), scope);
+	}
+
+	private ResponseEntity<TokenResponse> token(String authorization, String scope) {
 		Token t = ap.getToken();
+		t.setAuthorization(authorization);
 		t.setScope(scope);
 		HttpEntity<Void> he = getHttpEntity(t);
 		return rt.exchange(t.uri(), HttpMethod.POST, he, TokenResponse.class);
 	}
 
 	private HttpEntity<RegisterRequest> getHttpEntity(Register r) {
-		RegisterRequest rr = r;
+		Parameter p = r.getParameter();
 		MultiValueMap<String, String> h = new LinkedMultiValueMap<>();
-		h.add("Authorization", r.getAuthorization());
-		h.add("Content-Type", r.getContenttype());
-		return new HttpEntity<>(rr, h);
+		h.add("Authorization", "Basic " + p.getAuthorization());
+		h.add("Content-Type", p.getContenttype());
+		return new HttpEntity<>(r, h);
 	}
 
 	private HttpEntity<Void> getHttpEntity(Token t) {

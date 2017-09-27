@@ -34,6 +34,18 @@
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>io.swagger</groupId>
+			<artifactId>swagger-java-client</artifactId>
+			<version>1.0.2</version>
+			<scope>compile</scope>
+		</dependency>
 	</dependencies>
-
+	<repositories>
+		<repository>
+			<id>public</id>
+			<name>Public Repositories</name>
+			<url>https://alm.cleartech.com.br/nexus/content/groups/public/</url>
+		</repository>
+	</repositories>
 </project>

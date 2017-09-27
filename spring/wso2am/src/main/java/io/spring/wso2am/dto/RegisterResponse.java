@@ -73,8 +73,7 @@ public class RegisterResponse {
 
 	public String getAuthorization() {
 		String key = getClientId() + ":" + getClientSecret();
-		String encode = Base64.getEncoder().encodeToString(key.getBytes());
-		return "Basic " + encode;
+		return Base64.getEncoder().encodeToString(key.getBytes());
 	}
 
 	@Override

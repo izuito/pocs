@@ -44,9 +44,9 @@ public class Wso2AmConfiguration {
 
 	private List<HttpMessageConverter<?>> getListHttpMessageConverter() {
 		LOGGER.info("*** Wso2AmConfiguration - List<HttpMessageConverter<?>>");
-		List<HttpMessageConverter<?>> list = new ArrayList<>();
-		list.add(new MappingJackson2HttpMessageConverter(objectMapper()));
-		return list;
+		List<HttpMessageConverter<?>> lhmc = new ArrayList<>();
+		lhmc.add(new MappingJackson2HttpMessageConverter(objectMapper()));
+		return lhmc;
 	}
 
 	public ObjectMapper objectMapper() {
