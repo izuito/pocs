@@ -10,7 +10,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import io.spring.wso2.controller.WSO2Service;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { WSO2App.class })
+@SpringBootTest(classes = { Wso2App.class })
 public class Connecting {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(Connecting.class);

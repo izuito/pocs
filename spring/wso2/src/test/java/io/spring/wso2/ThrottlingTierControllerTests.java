@@ -23,7 +23,7 @@ import io.swagger.client.publisher.model.Tier.TierPlanEnum;
 import io.swagger.client.publisher.model.TierList;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(classes = { WSO2App.class })
+@SpringBootTest(classes = { Wso2App.class })
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class ThrottlingTierControllerTests {
 
@@ -35,7 +35,7 @@ public class ThrottlingTierControllerTests {
 	@Test
 	public void test1CreateTier() throws Exception {
 		Tier tier = tier();
-		ResponseEntity<Tier> res = c.createTier(tier);
+		ResponseEntity<Tier> res = c.create(tier);
 		Assert.assertEquals(HttpStatus.CREATED, res.getStatusCode());
 	}
 	
@@ -44,20 +44,20 @@ public class ThrottlingTierControllerTests {
 		Tier tier = tier();
 		tier.requestCount(10L);
 		String tierName = tier.getName();
-		ResponseEntity<Tier> res = c.updateTier(tierName , tier);
+		ResponseEntity<Tier> res = c.update(tierName , tier);
 		Assert.assertEquals(HttpStatus.OK, res.getStatusCode());
 	}
 	
 	@Test
 	public void test3GetDetailsOfTier() throws Exception {
 		String tierName = "TTier";
-		ResponseEntity<Tier> res = c.getTier(tierName);
+		ResponseEntity<Tier> res = c.get(tierName);
 		Assert.assertEquals(HttpStatus.OK, res.getStatusCode());
 	}
 	
 	@Test
 	public void test4GetAllTiers() throws Exception {
-		ResponseEntity<TierList> res = c.getAllTiers();
+		ResponseEntity<TierList> res = c.get();
 		Assert.assertEquals(HttpStatus.OK, res.getStatusCode());
 		TierList tiers = res.getBody();
 		Assert.assertEquals(new Integer(5), tiers.getCount());
@@ -66,7 +66,7 @@ public class ThrottlingTierControllerTests {
 	@Test
 	public void test5DeleteTier() throws Exception {
 		String tierName = "TTier";
-		ResponseEntity<Void> res = c.deleteTier(tierName);
+		ResponseEntity<Void> res = c.delete(tierName);
 		Assert.assertEquals(HttpStatus.OK, res.getStatusCode());
 	}
 	

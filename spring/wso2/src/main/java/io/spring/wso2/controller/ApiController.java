@@ -1,7 +1,10 @@
 package io.spring.wso2.controller;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -25,17 +28,16 @@ import com.jayway.jsonpath.Criteria;
 import com.jayway.jsonpath.Filter;
 import com.jayway.jsonpath.JsonPath;
 
-import io.spring.wso2.model.RegisterRequest;
 import io.spring.wso2.model.RegisterResponse;
 import io.spring.wso2.model.TokenResponse;
 import io.spring.wso2.properties.WSO2Properties;
 import io.spring.wso2.properties.WSO2Properties.Api.Create;
 import io.spring.wso2.properties.WSO2Properties.Api.Get;
-import io.spring.wso2.properties.WSO2Properties.Register;
 import io.spring.wso2.service.WSO2AccessService;
 import io.swagger.client.publisher.ApiException;
 import io.swagger.client.publisher.model.API;
 import io.swagger.client.publisher.model.APIList;
+import net.minidev.json.JSONArray;
 
 @RestController
 @RequestMapping("/apis")
@@ -48,12 +50,14 @@ public class ApiController {
 	private final WSO2Properties w;
 	private final WSO2AccessService was;
 	private final ObjectMapper om;
+	private final ModelMapper mm;
 
-	public ApiController(RestTemplate rt, WSO2Properties w, WSO2AccessService was, ObjectMapper om) {
+	public ApiController(RestTemplate rt, WSO2Properties w, WSO2AccessService was, ObjectMapper om, ModelMapper mm) {
 		this.rt = rt;
 		this.w = w;
 		this.was = was;
 		this.om = om;
+		this.mm = mm;
 	}
 
 	@PostMapping
@@ -64,23 +68,29 @@ public class ApiController {
 	}
 
 	@GetMapping("/{apiId}")
-	public @ResponseBody ResponseEntity<Object> getApi(@PathVariable("apiId") String apiId)
+	public @ResponseBody ResponseEntity<List<API>> get(@PathVariable("apiId") String apiId)
 			throws ApiException, IOException {
-		ResponseEntity<APIList> re = getSearchApis();
+		ResponseEntity<APIList> re = get();
 		APIList body = re.getBody();
 		String json = om.writeValueAsString(body);
 		Filter filters = Filter.filter(Criteria.where("id").eq(apiId));
 		String jsonPath = "$.list[?]";
-		Object o = JsonPath.read(json, jsonPath, filters);
-		return new ResponseEntity<>(o, HttpStatus.OK);
+		JSONArray o = JsonPath.read(json, jsonPath, filters);
+		ArrayList<API> apis = new ArrayList<>();
+		o.forEach(c -> {
+			API e = mm.map(c, API.class);
+			apis.add(e);
+		});
+		LOGGER.info("*** Filter: {}", o);
+		return new ResponseEntity<>(apis, HttpStatus.OK);
 	}
 
 	@GetMapping
-	public @ResponseBody ResponseEntity<APIList> getSearchApis() {
+	public @ResponseBody ResponseEntity<APIList> get() {
 		ResponseEntity<RegisterResponse> rerr = was.register();
 		RegisterResponse rr = rerr.getBody();
 		Get get = w.getApi().getGet();
-		ResponseEntity<TokenResponse> retr = was.token(rr.authorization(), get.getScope());
+		ResponseEntity<TokenResponse> retr = was.token(rr.getAuthorization(), get.getScope());
 		TokenResponse tr = retr.getBody();
 		get.setAuthorization(tr.authorization());
 		HttpEntity<API> he = getHttpEntity(get);
@@ -92,23 +102,12 @@ public class ApiController {
 		mh.add("Authorization", "Bearer " + create.getAuthorization());
 		return new HttpEntity<API>(mh);
 	}
-	
+
 	private HttpEntity<API> getHttpEntity(Get get) {
 		MultiValueMap<String, String> mh = new LinkedMultiValueMap<>();
 		mh.add("Authorization", "Basic " + get.getAuthorization());
 		mh.add("Content-Type", get.getContentType());
 		return new HttpEntity<API>(mh);
-	}
-	
-	public RegisterRequest toRegisterRequest(Register r) {
-		RegisterRequest rr = new RegisterRequest();
-		rr.setCallbackUrl(r.getCallbackUrl());
-		rr.setClientName(r.getClientName());
-		rr.setTokenScope(r.getTokenScope());
-		rr.setOwner(r.getOwner());
-		rr.setGrantType(r.getGrantType());
-		rr.setSaasApp(r.isSaasApp());
-		return rr;
 	}
 
 }

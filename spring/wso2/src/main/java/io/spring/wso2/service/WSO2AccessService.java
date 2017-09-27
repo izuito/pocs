@@ -39,12 +39,12 @@ public class WSO2AccessService {
 		Token token = wp.getToken();
 		token.setAuthorization(authorization);
 		token.setScope(scope);
-		HttpEntity<Object> he = getHttpEntity(token);
+		HttpEntity<Void> he = getHttpEntity(token);
 		return rt.exchange(token.uri(), HttpMethod.POST, he, TokenResponse.class);
 	}
 
 	public ResponseEntity<TokenResponse> token(Token token) {
-		HttpEntity<Object> he = getHttpEntity(token);
+		HttpEntity<Void> he = getHttpEntity(token);
 		return rt.exchange(token.uri(), HttpMethod.POST, he, TokenResponse.class);
 	}
 
@@ -56,7 +56,7 @@ public class WSO2AccessService {
 		return new HttpEntity<>(rr, h);
 	}
 
-	private HttpEntity<Object> getHttpEntity(Token token) {
+	private HttpEntity<Void> getHttpEntity(Token token) {
 		MultiValueMap<String, String> headers = new LinkedMultiValueMap<>();
 		headers.add("Authorization", "Basic " + token.getAuthorization());
 		return new HttpEntity<>(headers);

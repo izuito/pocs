@@ -29,7 +29,7 @@ public class WSO2Service {
 	public TokenResponse getTokenByScope(RegisterRequest req, String url, String scope) {
 		ResponseEntity<RegisterResponse> re = executeRegister(req, url, "YWRtaW46YWRtaW4=");
 		RegisterResponse rr = re.getBody();
-		ResponseEntity<TokenResponse> res = executeToken(rr.authorization(), "", "password", "admin", "admin", scope);
+		ResponseEntity<TokenResponse> res = executeToken(rr.getAuthorization(), "", "password", "admin", "admin", scope);
 		return res.getBody();
 	}
 

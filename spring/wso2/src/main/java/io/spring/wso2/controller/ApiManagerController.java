@@ -1,13 +1,16 @@
 package io.spring.wso2.controller;
 
 import org.modelmapper.ModelMapper;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
@@ -19,7 +22,8 @@ import io.spring.wso2.properties.WSO2Properties.Register;
 import io.spring.wso2.properties.WSO2Properties.Token;
 
 @RestController
-@RequestMapping("/api/am")
+@RequestMapping("/apim")
+@EnableConfigurationProperties(WSO2Properties.class)
 public class ApiManagerController {
 
 	private final RestTemplate rt;
@@ -39,8 +43,9 @@ public class ApiManagerController {
 		return rt.exchange(r.getUrl(), HttpMethod.POST, he, RegisterResponse.class);
 	}
 
-	@PostMapping("/token/authorization/{authorization}/scope/{scope}")
-	public ResponseEntity<TokenResponse> token(String authorization, String scope) {
+	@PostMapping(params = { "authorization", "scope" }, value = { "/token" })
+	public ResponseEntity<TokenResponse> token(@RequestParam("authorization") String authorization,
+			@RequestParam("scope") String scope) {
 		Token token = wp.getToken();
 		token.setAuthorization(authorization);
 		token.setScope(scope);
@@ -48,12 +53,36 @@ public class ApiManagerController {
 		return rt.exchange(token.uri(), HttpMethod.POST, he, TokenResponse.class);
 	}
 
-	@PostMapping("/token/scope/{scope}")
-	public ResponseEntity<TokenResponse> token(String scope) {
+	@PostMapping(params = { "scope" }, value = { "/token" })
+	public ResponseEntity<TokenResponse> token(@RequestParam("scope") String scope) {
 		ResponseEntity<RegisterResponse> rerr = register();
 		RegisterResponse rr = rerr.getBody();
-		ResponseEntity<TokenResponse> retr = token(rr.authorization(), scope);
-		return token(rr.authorization(), scope);
+		return token(rr.getAuthorization(), scope);
+	}
+
+	@PostMapping(value = { "/token/scope/api_view" })
+	public ResponseEntity<TokenResponse> apiview() {
+		return token("apim:api_view");
+	}
+
+	@PostMapping(value = { "/token/scope/api_create" })
+	public ResponseEntity<TokenResponse> apicreate() {
+		return token("apim:api_create");
+	}
+	
+	@PostMapping(value = { "/token/scope/api_publish" })
+	public ResponseEntity<TokenResponse> apipublish() {
+		return token("apim:api_publish");
+	}	
+	
+	@PostMapping(value = { "/token/scope/tier_view" })
+	public ResponseEntity<TokenResponse> tierview() {
+		return token("apim:tier_view");
+	}
+	
+	@PostMapping(value = { "/token/scope/tier_manage" })
+	public ResponseEntity<TokenResponse> tiermanage() {
+		return token("apim:tier_manage");
 	}
 
 	private HttpEntity<RegisterRequest> getHttpEntity(Register r) {
