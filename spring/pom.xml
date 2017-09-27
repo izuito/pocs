@@ -12,6 +12,7 @@
 		<module>autoconfiguration</module>
 		<module>web</module>
 		<module>wso2</module>
+		<module>wso2am</module>
 	</modules>
 	<parent>
 		<groupId>org.springframework.boot</groupId>
