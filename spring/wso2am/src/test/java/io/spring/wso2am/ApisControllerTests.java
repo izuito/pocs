@@ -33,7 +33,7 @@ public class ApisControllerTests {
 	@Autowired
 	private ApisController ac;
 
-//	@Ignore
+	@Ignore
 	@Test
 	public void test1Create() throws Exception {
 		API api = api();
@@ -48,7 +48,6 @@ public class ApisControllerTests {
 		String apiId = "58e0c640-3455-44a4-9827-708c6ff2ecee";
 		API api = api();
 		api.description("API TEST APPLICATION");
-		api.status("PUBLISHED");
 		ResponseEntity<API> rea = ac.update(apiId, api);
 		LOGGER.info("{}", rea);
 		Assert.assertEquals(HttpStatus.OK, rea.getStatusCode());
@@ -56,8 +55,17 @@ public class ApisControllerTests {
 	
 //	@Ignore
 	@Test
+	public void test3ChangeStatus() throws Exception {
+		String apiId = "a4314add-0d94-4a3d-8b0a-39a4e3448ddf";
+		ResponseEntity<Void> rev = ac.published(apiId);
+		LOGGER.info("{}", rev);
+		Assert.assertEquals(HttpStatus.OK, rev.getStatusCode());			
+	}
+	
+	@Ignore
+	@Test
 	public void test4Delete() throws Exception {
-		String apiId = "1ca90f87-1cc7-448f-92fa-04c1f044cdc8";
+		String apiId = "14a02c48-34ab-4695-baf8-d1b6f1d1cbf7";
 		ResponseEntity<Void> rev = ac.delete(apiId);
 		LOGGER.info("{}", rev);
 		Assert.assertEquals(HttpStatus.OK, rev.getStatusCode());		

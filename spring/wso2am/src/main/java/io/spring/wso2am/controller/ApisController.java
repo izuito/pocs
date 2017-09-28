@@ -19,6 +19,7 @@ import org.springframework.web.client.RestTemplate;
 
 import io.spring.wso2am.dto.TokenResponse;
 import io.spring.wso2am.properties.ApisProperties;
+import io.spring.wso2am.properties.ApisProperties.ChangeLifeCycle;
 import io.spring.wso2am.properties.ApisProperties.Create;
 import io.spring.wso2am.properties.ApisProperties.Delete;
 import io.spring.wso2am.properties.ApisProperties.GetAll;
@@ -62,7 +63,7 @@ public class ApisController {
 		HttpEntity<API> he = heu.toHttpEntity(api, u.getAuthorization(), u.getContenttype());
 		return rt.exchange(u.getUrl(), HttpMethod.PUT, he, API.class);
 	}
-	
+
 	@DeleteMapping(value = { "/{apiId}" })
 	public @ResponseBody ResponseEntity<Void> delete(@RequestParam("apiId") String apiId) {
 		Delete d = ap.getDelete();
@@ -71,13 +72,22 @@ public class ApisController {
 		HttpEntity<API> he = heu.toHttpEntity(d.getAuthorization());
 		return rt.exchange(d.getUrl(), HttpMethod.DELETE, he, Void.class);
 	}
-	
+
 	@GetMapping
 	public @ResponseBody ResponseEntity<APIList> get() {
 		GetAll ga = ap.getGetAll();
 		ga.setAuthorization(getAuthorization(ga.getScope()));
 		HttpEntity<Object> he = heu.toHttpEntity(ga.getAuthorization());
 		return rt.exchange(ga.getUrl(), HttpMethod.GET, he, APIList.class);
+	}
+
+	@PostMapping(value = { "/{apiId}/published" })
+	public @ResponseBody ResponseEntity<Void> published(@RequestParam("apiId") String apiId) {
+		ChangeLifeCycle c = ap.getChangeLifeCycle();
+		c.setUrl(c.getUrl() + "?apiId=" + apiId + "&action=Publish");
+		c.setAuthorization(getAuthorization(c.getScope()));
+		HttpEntity<Void> he = heu.toHttpEntity(c.getAuthorization());
+		return rt.exchange(c.getUrl(), HttpMethod.POST, he, Void.class);
 	}
 
 	private String getAuthorization(String scope) {
