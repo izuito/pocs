@@ -1,8 +1,7 @@
-package io.spring.wso2am;
+package io.spring.wso2am.controller;
 
 import org.junit.Assert;
 import org.junit.FixMethodOrder;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
@@ -14,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import io.spring.wso2am.controller.ThrottlingTierController;
 import io.swagger.client.publisher.model.Tier;
 import io.swagger.client.publisher.model.Tier.TierLevelEnum;
 import io.swagger.client.publisher.model.Tier.TierPlanEnum;
@@ -64,7 +62,7 @@ public class ThrottlingTierControllerTests {
 		Assert.assertEquals(HttpStatus.OK, retl.getStatusCode());
 	}
 	
-	@Ignore
+//	@Ignore
 	@Test
 	public void test5Delete() throws Exception {
 		String tierName = "TTier";

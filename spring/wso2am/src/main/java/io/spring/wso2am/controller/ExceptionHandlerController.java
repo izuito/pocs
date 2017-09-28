@@ -23,7 +23,9 @@ public class ExceptionHandlerController {
 
 	@ExceptionHandler(value = { HttpClientErrorException.class, HttpServerErrorException.class })
 	public @ResponseBody ResponseEntity<?> error(HttpServletRequest hsr, HttpClientErrorException ex) {
-		LOGGER.info("* Fail Response: {}", ex);
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("* Fail Response: {}", ex);
+		}
 		return new ResponseEntity<>(ex.getResponseBodyAsString(), ex.getStatusCode());
 	}
 

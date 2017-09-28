@@ -47,7 +47,7 @@ public class ThrottlingTierController {
 	@PostMapping
 	public @ResponseBody ResponseEntity<Tier> create(@RequestBody Tier t) {
 		Create c = ttp.getCreate();
-		c.setAuthorization(getAuthorization("apim:tier_manage"));
+		c.setAuthorization(getAuthorization(c.getScope()));
 		HttpEntity<Tier> he = heu.toHttpEntity(t, c.getAuthorization(), c.getContenttype());
 		return rt.exchange(c.getUrl(), HttpMethod.POST, he, Tier.class);
 	}
@@ -56,7 +56,7 @@ public class ThrottlingTierController {
 	public @ResponseBody ResponseEntity<Tier> update(@PathVariable("tierName") String tierName, @RequestBody Tier t) {
 		Update u = ttp.getUpdate();
 		u.setUrl(u.getUrl() + "/" + tierName);
-		u.setAuthorization(getAuthorization("apim:tier_manage"));
+		u.setAuthorization(getAuthorization(u.getScope()));
 		HttpEntity<Tier> he = heu.toHttpEntity(t, u.getAuthorization(), u.getContenttype());
 		return rt.exchange(u.getUrl(), HttpMethod.PUT, he, Tier.class);
 	}
@@ -64,17 +64,17 @@ public class ThrottlingTierController {
 	@DeleteMapping(value = { "/{tierName}" })
 	public @ResponseBody ResponseEntity<Void> delete(@PathVariable("tierName") String tierName) {
 		Delete d = ttp.getDelete();
-		d.setUrl(d.getUrl() + "/" + tierName);
-		d.setAuthorization(getAuthorization("apim:tier_manage"));
+		d.setAuthorization(getAuthorization(d.getScope()));
+		String url = d.getUrl() + "/" + tierName;
 		HttpEntity<Tier> he = heu.toHttpEntity(d.getAuthorization());
-		return rt.exchange(d.getUrl(), HttpMethod.DELETE, he, Void.class);
+		return rt.exchange(url, HttpMethod.DELETE, he, Void.class);
 	}
 
 	@GetMapping(value = { "/{tierName}" })
 	public @ResponseBody ResponseEntity<Tier> get(@PathVariable("tierName") String tierName) {
 		Get g = ttp.getGet();
 		g.setUrl(g.getUrl() + "/" + tierName);
-		g.setAuthorization(getAuthorization("apim:tier_view"));
+		g.setAuthorization(getAuthorization(g.getScope()));
 		HttpEntity<Tier> he = heu.toHttpEntity(g.getAuthorization());
 		return rt.exchange(g.getUrl(), HttpMethod.GET, he, Tier.class);
 	}
@@ -82,7 +82,7 @@ public class ThrottlingTierController {
 	@GetMapping
 	public @ResponseBody ResponseEntity<TierList> get() {
 		GetAll ga = ttp.getGetAll();
-		ga.setAuthorization(getAuthorization("apim:tier_view"));
+		ga.setAuthorization(getAuthorization(ga.getScope()));
 		HttpEntity<Tier> he = heu.toHttpEntity(ga.getAuthorization());
 		return rt.exchange(ga.getUrl(), HttpMethod.GET, he, TierList.class);
 	}

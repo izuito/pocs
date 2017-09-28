@@ -1,13 +1,16 @@
 package io.spring.wso2am.controller;
 
+import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -26,6 +29,8 @@ import io.spring.wso2am.properties.ApisProperties.GetAll;
 import io.spring.wso2am.properties.ApisProperties.Update;
 import io.spring.wso2am.utils.HttpEntityUtils;
 import io.swagger.client.publisher.model.API;
+import io.swagger.client.publisher.model.APIInfo;
+import io.swagger.client.publisher.model.APIInfoObjectWithBasicAPIDetails_;
 import io.swagger.client.publisher.model.APIList;
 
 @RestController
@@ -39,12 +44,14 @@ public class ApisController {
 	private final ApimController ac;
 	private final ApisProperties ap;
 	private final HttpEntityUtils heu;
+	private final ModelMapper mm;
 
-	public ApisController(RestTemplate rt, ApimController ac, ApisProperties ap, HttpEntityUtils heu) {
+	public ApisController(RestTemplate rt, ApimController ac, ApisProperties ap, HttpEntityUtils heu, ModelMapper mm) {
 		this.rt = rt;
 		this.ac = ac;
 		this.ap = ap;
 		this.heu = heu;
+		this.mm = mm;
 	}
 
 	@PostMapping
@@ -79,6 +86,20 @@ public class ApisController {
 		ga.setAuthorization(getAuthorization(ga.getScope()));
 		HttpEntity<Object> he = heu.toHttpEntity(ga.getAuthorization());
 		return rt.exchange(ga.getUrl(), HttpMethod.GET, he, APIList.class);
+	}
+
+	@GetMapping(value = { "/{name}" })
+	public ResponseEntity<APIInfo> get(@PathVariable("name") String name) {
+		ResponseEntity<APIList> real = get();
+		APIList al = real.getBody();
+		APIInfo api = new APIInfo();
+		for (APIInfoObjectWithBasicAPIDetails_ ai : al.getList()) {
+			if (name.equals(ai.getName())) {
+				api = mm.map(ai, APIInfo.class);
+				break;
+			}
+		}
+		return new ResponseEntity<APIInfo>(api, HttpStatus.OK);
 	}
 
 	@PostMapping(value = { "/{apiId}/published" })

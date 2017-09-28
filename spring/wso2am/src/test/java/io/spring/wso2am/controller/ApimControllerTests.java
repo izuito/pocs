@@ -1,4 +1,4 @@
-package io.spring.wso2am;
+package io.spring.wso2am.controller;
 
 import org.junit.Assert;
 import org.junit.FixMethodOrder;

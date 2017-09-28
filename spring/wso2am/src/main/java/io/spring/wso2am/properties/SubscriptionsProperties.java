@@ -2,8 +2,8 @@ package io.spring.wso2am.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "wso2.tiers")
-public class ThrottlingTierProperties {
+@ConfigurationProperties(prefix = "wso2.subscriptions")
+public class SubscriptionsProperties {
 
 	private Create create;
 	private Update update;
@@ -54,8 +54,8 @@ public class ThrottlingTierProperties {
 	public static class Create {
 
 		private String url;
-		private String scope;
 		private String contenttype;
+		private String scope;
 		private String authorization;
 
 		public String getUrl() {
@@ -66,20 +66,20 @@ public class ThrottlingTierProperties {
 			this.url = url;
 		}
 
-		public String getScope() {
-			return scope;
-		}
-
-		public void setScope(String scope) {
-			this.scope = scope;
-		}
-
 		public String getContenttype() {
 			return contenttype;
 		}
 
 		public void setContenttype(String contenttype) {
 			this.contenttype = contenttype;
+		}
+
+		public String getScope() {
+			return scope;
+		}
+
+		public void setScope(String scope) {
+			this.scope = scope;
 		}
 
 		public String getAuthorization() {
@@ -90,13 +90,19 @@ public class ThrottlingTierProperties {
 			this.authorization = authorization;
 		}
 
+		@Override
+		public String toString() {
+			return "Create [url=" + url + ", contenttype=" + contenttype + ", scope=" + scope + ", authorization="
+					+ authorization + "]";
+		}
+
 	}
 
 	public static class Update {
 
 		private String url;
-		private String scope;
 		private String contenttype;
+		private String scope;
 		private String authorization;
 
 		public String getUrl() {
@@ -107,20 +113,20 @@ public class ThrottlingTierProperties {
 			this.url = url;
 		}
 
-		public String getScope() {
-			return scope;
-		}
-
-		public void setScope(String scope) {
-			this.scope = scope;
-		}
-
 		public String getContenttype() {
 			return contenttype;
 		}
 
 		public void setContenttype(String contenttype) {
 			this.contenttype = contenttype;
+		}
+
+		public String getScope() {
+			return scope;
+		}
+
+		public void setScope(String scope) {
+			this.scope = scope;
 		}
 
 		public String getAuthorization() {
@@ -168,6 +174,7 @@ public class ThrottlingTierProperties {
 	public static class Get {
 
 		private String url;
+		private String contenttype;
 		private String scope;
 		private String authorization;
 
@@ -177,6 +184,14 @@ public class ThrottlingTierProperties {
 
 		public void setUrl(String url) {
 			this.url = url;
+		}
+
+		public String getContenttype() {
+			return contenttype;
+		}
+
+		public void setContenttype(String contenttype) {
+			this.contenttype = contenttype;
 		}
 
 		public String getScope() {
