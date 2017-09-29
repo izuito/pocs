@@ -15,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
-import io.spring.wso2am.dto.TokenResponse;
 import io.spring.wso2am.properties.ThrottlingTierProperties;
 import io.spring.wso2am.properties.ThrottlingTierProperties.Create;
 import io.spring.wso2am.properties.ThrottlingTierProperties.Delete;
@@ -47,7 +46,7 @@ public class ThrottlingTierController {
 	@PostMapping
 	public @ResponseBody ResponseEntity<Tier> create(@RequestBody Tier t) {
 		Create c = ttp.getCreate();
-		c.setAuthorization(getAuthorization(c.getScope()));
+		c.setAuthorization(ac.getAuthorization(c.getScope()));
 		HttpEntity<Tier> he = heu.toHttpEntity(t, c.getAuthorization(), c.getContenttype());
 		return rt.exchange(c.getUrl(), HttpMethod.POST, he, Tier.class);
 	}
@@ -56,7 +55,7 @@ public class ThrottlingTierController {
 	public @ResponseBody ResponseEntity<Tier> update(@PathVariable("tierName") String tierName, @RequestBody Tier t) {
 		Update u = ttp.getUpdate();
 		u.setUrl(u.getUrl() + "/" + tierName);
-		u.setAuthorization(getAuthorization(u.getScope()));
+		u.setAuthorization(ac.getAuthorization(u.getScope()));
 		HttpEntity<Tier> he = heu.toHttpEntity(t, u.getAuthorization(), u.getContenttype());
 		return rt.exchange(u.getUrl(), HttpMethod.PUT, he, Tier.class);
 	}
@@ -64,7 +63,7 @@ public class ThrottlingTierController {
 	@DeleteMapping(value = { "/{tierName}" })
 	public @ResponseBody ResponseEntity<Void> delete(@PathVariable("tierName") String tierName) {
 		Delete d = ttp.getDelete();
-		d.setAuthorization(getAuthorization(d.getScope()));
+		d.setAuthorization(ac.getAuthorization(d.getScope()));
 		String url = d.getUrl() + "/" + tierName;
 		HttpEntity<Tier> he = heu.toHttpEntity(d.getAuthorization());
 		return rt.exchange(url, HttpMethod.DELETE, he, Void.class);
@@ -74,7 +73,7 @@ public class ThrottlingTierController {
 	public @ResponseBody ResponseEntity<Tier> get(@PathVariable("tierName") String tierName) {
 		Get g = ttp.getGet();
 		g.setUrl(g.getUrl() + "/" + tierName);
-		g.setAuthorization(getAuthorization(g.getScope()));
+		g.setAuthorization(ac.getAuthorization(g.getScope()));
 		HttpEntity<Tier> he = heu.toHttpEntity(g.getAuthorization());
 		return rt.exchange(g.getUrl(), HttpMethod.GET, he, Tier.class);
 	}
@@ -82,15 +81,9 @@ public class ThrottlingTierController {
 	@GetMapping
 	public @ResponseBody ResponseEntity<TierList> get() {
 		GetAll ga = ttp.getGetAll();
-		ga.setAuthorization(getAuthorization(ga.getScope()));
+		ga.setAuthorization(ac.getAuthorization(ga.getScope()));
 		HttpEntity<Tier> he = heu.toHttpEntity(ga.getAuthorization());
 		return rt.exchange(ga.getUrl(), HttpMethod.GET, he, TierList.class);
-	}
-
-	private String getAuthorization(String scope) {
-		ResponseEntity<TokenResponse> retr = ac.token(scope);
-		TokenResponse tr = retr.getBody();
-		return tr.getTokenType() + " " + tr.getAccessToken();
 	}
 
 }

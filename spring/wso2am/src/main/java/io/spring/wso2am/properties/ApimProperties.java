@@ -52,6 +52,7 @@ public class ApimProperties {
 			private String username;
 			private String password;
 			private String contenttype;
+			private String authorizationType;
 
 			public String getUrl() {
 				return url;
@@ -85,9 +86,21 @@ public class ApimProperties {
 				this.contenttype = contenttype;
 			}
 
-			public String getAuthorization() {
+			public String getAuthorizationType() {
+				return authorizationType;
+			}
+
+			public void setAuthorizationType(String authorizationType) {
+				this.authorizationType = authorizationType;
+			}
+
+			public String getAuthorizationEncoded() {
 				String key = getUsername() + ":" + getPassword();
 				return Base64.getEncoder().encodeToString(key.getBytes());
+			}
+
+			public String getAuthorization() {
+				return getAuthorizationType() + " " + getAuthorizationEncoded();
 			}
 
 		}
@@ -96,10 +109,41 @@ public class ApimProperties {
 
 	public static class Token extends TokenRequest {
 
-		public String authorization() {
+		private String authorizationType;
+		private String authorizationEncoded;
+		private String scope;
+
+		public String getAuthorizationType() {
+			return authorizationType;
+		}
+
+		public void setAuthorizationType(String authorizationType) {
+			this.authorizationType = authorizationType;
+		}
+
+		public String getAuthorizationEncoded() {
+			return authorizationEncoded;
+		}
+
+		public void setAuthorizationEncoded(String authorizationEncoded) {
+			this.authorizationEncoded = authorizationEncoded;
+		}
+
+		public String getScope() {
+			return scope;
+		}
+
+		public void setScope(String scope) {
+			this.scope = scope;
+		}
+
+		public String getAuthorization() {
+			return getAuthorizationType() + " " + getAuthorizationEncoded();
+		}
+
+		public String encodeToString() {
 			String key = getUsername() + ":" + getPassword();
-			String encode = Base64.getEncoder().encodeToString(key.getBytes());
-			return "Basic " + encode;
+			return Base64.getEncoder().encodeToString(key.getBytes());
 		}
 
 		public String uri() {

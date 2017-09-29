@@ -1,10 +1,5 @@
 package io.spring.wso2am.dto;
 
-import java.util.Base64;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-
-@JsonIgnoreProperties(value = { "authorization" })
 public class RegisterResponse {
 
 	private String callBackURL;
@@ -69,11 +64,6 @@ public class RegisterResponse {
 
 	public void setAppOwner(String appOwner) {
 		this.appOwner = appOwner;
-	}
-
-	public String getAuthorization() {
-		String key = getClientId() + ":" + getClientSecret();
-		return Base64.getEncoder().encodeToString(key.getBytes());
 	}
 
 	@Override

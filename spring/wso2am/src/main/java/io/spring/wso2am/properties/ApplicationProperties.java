@@ -1,6 +1,7 @@
 package io.spring.wso2am.properties;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.web.util.UriComponentsBuilder;
 
 @ConfigurationProperties(prefix = "wso2.applications")
 public class ApplicationProperties {
@@ -10,6 +11,7 @@ public class ApplicationProperties {
 	private Delete delete;
 	private Get get;
 	private GetAll getAll;
+	private GenerateKeys generateKeys;
 
 	public Create getCreate() {
 		return create;
@@ -49,6 +51,14 @@ public class ApplicationProperties {
 
 	public void setGetAll(GetAll getAll) {
 		this.getAll = getAll;
+	}
+
+	public GenerateKeys getGenerateKeys() {
+		return generateKeys;
+	}
+
+	public void setGenerateKeys(GenerateKeys generateKeys) {
+		this.generateKeys = generateKeys;
 	}
 
 	public static class Create {
@@ -222,6 +232,53 @@ public class ApplicationProperties {
 
 		public void setAuthorization(String authorization) {
 			this.authorization = authorization;
+		}
+
+	}
+
+	public static class GenerateKeys {
+
+		private String url;
+		private String contenttype;
+		private String scope;
+		private String authorization;
+
+		public String getUrl() {
+			return url;
+		}
+
+		public void setUrl(String url) {
+			this.url = url;
+		}
+
+		public String getContenttype() {
+			return contenttype;
+		}
+
+		public void setContenttype(String contenttype) {
+			this.contenttype = contenttype;
+		}
+
+		public String getScope() {
+			return scope;
+		}
+
+		public void setScope(String scope) {
+			this.scope = scope;
+		}
+
+		public String getAuthorization() {
+			return authorization;
+		}
+
+		public void setAuthorization(String authorization) {
+			this.authorization = authorization;
+		}
+
+		public String uri(String applicationId) {
+			UriComponentsBuilder uri = UriComponentsBuilder.fromUriString(getUrl()).queryParam("applicationId",
+					applicationId);
+			return uri.toUriString();
 		}
 
 	}

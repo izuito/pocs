@@ -31,9 +31,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
 @Configuration
-public class Wso2AmConfiguration {
+public class WSO2AmConfiguration {
 
-	private static final Logger LOGGER = LoggerFactory.getLogger(Wso2AmConfiguration.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(WSO2AmConfiguration.class);
 
 	@Bean
 	public ModelMapper modelMapper() {
@@ -66,16 +66,17 @@ public class Wso2AmConfiguration {
 	public HttpComponentsClientHttpRequestFactory httpComponentsClientHttpRequestFactory()
 			throws KeyManagementException, NoSuchAlgorithmException, KeyStoreException {
 		LOGGER.info("*** Wso2AmConfiguration - HttpComponentsClientHttpRequestFactory");
-		TrustStrategy trustStrategy = new TrustStrategy() {
-			@Override
-			public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
-				return true;
-			}
-		};
-		SSLContext sslc = SSLContexts.custom().loadTrustMaterial(trustStrategy).build();
-		SSLConnectionSocketFactory csf = new SSLConnectionSocketFactory(sslc, new NoopHostnameVerifier());
-		CloseableHttpClient hc = HttpClients.custom().setSSLSocketFactory(csf).build();
+		SSLContext sc = SSLContexts.custom().loadTrustMaterial(ts).build();
+		SSLConnectionSocketFactory scsf = new SSLConnectionSocketFactory(sc, new NoopHostnameVerifier());
+		CloseableHttpClient hc = HttpClients.custom().setSSLSocketFactory(scsf).build();
 		return new HttpComponentsClientHttpRequestFactory(hc);
 	}
+	
+	TrustStrategy ts = new TrustStrategy() {
+		@Override
+		public boolean isTrusted(X509Certificate[] x509Certificates, String s) throws CertificateException {
+			return true;
+		}
+	};
 
 }

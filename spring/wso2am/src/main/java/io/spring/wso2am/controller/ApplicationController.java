@@ -1,5 +1,7 @@
 package io.spring.wso2am.controller;
 
+import java.net.URI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -19,10 +21,13 @@ import org.springframework.web.client.RestTemplate;
 import io.spring.wso2am.dto.TokenResponse;
 import io.spring.wso2am.properties.ApplicationProperties;
 import io.spring.wso2am.properties.ApplicationProperties.Create;
+import io.spring.wso2am.properties.ApplicationProperties.GenerateKeys;
 import io.spring.wso2am.properties.ApplicationProperties.GetAll;
 import io.spring.wso2am.utils.HttpEntityUtils;
 import io.swagger.client.store.model.Application;
 import io.swagger.client.store.model.ApplicationInfoObjectWithBasicApplicationDetails;
+import io.swagger.client.store.model.ApplicationKeyDetails;
+import io.swagger.client.store.model.ApplicationKeyGenerateRequest;
 import io.swagger.client.store.model.ApplicationList;
 
 @RestController
@@ -54,14 +59,26 @@ public class ApplicationController {
 		return rt.exchange(c.getUrl(), HttpMethod.POST, he, Application.class);
 	}
 
+	@PostMapping(value = { "/{applicationId}/generate-keys" })
+	public @ResponseBody ResponseEntity<ApplicationKeyDetails> generateKeys(@RequestParam("applicationId") String applicationId,
+			@RequestBody ApplicationKeyGenerateRequest akgr) {
+		GenerateKeys gk = ap.getGenerateKeys();
+		gk.setAuthorization(getAuthorization(gk.getScope()));
+		String url = gk.uri(applicationId);
+		LOGGER.info("*** URL(GenerateKey): {}", url);
+		HttpEntity<ApplicationKeyGenerateRequest> he = heu.toHttpEntity(akgr, gk.getAuthorization(),
+				gk.getContenttype());
+		return rt.exchange(url, HttpMethod.POST, he, ApplicationKeyDetails.class);
+	}
+
 	@GetMapping(params = { "name" })
 	public ResponseEntity<ApplicationInfoObjectWithBasicApplicationDetails> get(@RequestParam("name") String name) {
 		ResponseEntity<ApplicationList> real = get();
 		LOGGER.info(">>> {}", real);
 		ApplicationInfoObjectWithBasicApplicationDetails aiowbad = null;
 		ApplicationList al = real.getBody();
-		for(ApplicationInfoObjectWithBasicApplicationDetails a : al.getList()) {
-			if(name.equals(a.getName())) {
+		for (ApplicationInfoObjectWithBasicApplicationDetails a : al.getList()) {
+			if (name.equals(a.getName())) {
 				aiowbad = a;
 				break;
 			}

@@ -6,8 +6,8 @@ import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "io.spring.wso2am" })
-public class Wso2AmApplication {
+public class WSO2AmApplication {
 	public static void main(String[] args) throws Exception {
-		SpringApplication.run(Wso2AmApplication.class, args);
+		SpringApplication.run(WSO2AmApplication.class, args);
 	}
 }

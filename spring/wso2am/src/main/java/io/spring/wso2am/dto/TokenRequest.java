@@ -6,8 +6,6 @@ public class TokenRequest {
 	private String granttype;
 	private String username;
 	private String password;
-	private String scope;
-	private String authorization;
 
 	public String getUrl() {
 		return url;
@@ -39,22 +37,6 @@ public class TokenRequest {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public String getScope() {
-		return scope;
-	}
-
-	public void setScope(String scope) {
-		this.scope = scope;
-	}
-
-	public String getAuthorization() {
-		return authorization;
-	}
-
-	public void setAuthorization(String authorization) {
-		this.authorization = authorization;
 	}
 
 }

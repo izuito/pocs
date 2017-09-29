@@ -1,4 +1,4 @@
-package io.spring.wso2am.controller;
+package io.spring.wso2am.controller.exception.handler;
 
 import javax.servlet.http.HttpServletRequest;
 

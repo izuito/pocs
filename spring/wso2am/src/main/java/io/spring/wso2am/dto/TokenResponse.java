@@ -70,16 +70,10 @@ public class TokenResponse {
 		this.expiresIn = expiresIn;
 	}
 
-	public String authorization() {
-		return getTokenType() + " " + getAccessToken();
-	}
-
 	@Override
 	public String toString() {
 		return "Token [scope=" + scope + ", tokenType=" + tokenType + ", expiresToken=" + expiresToken
-				+ ", refreshToken=" + refreshToken + ", accessToken=" + accessToken + ", expiresIn=" + expiresIn
-				+ "]";
+				+ ", refreshToken=" + refreshToken + ", accessToken=" + accessToken + ", expiresIn=" + expiresIn + "]";
 	}
 
 }
-

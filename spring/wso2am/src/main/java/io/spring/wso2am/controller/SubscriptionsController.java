@@ -6,15 +6,19 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.RestTemplate;
 
 import io.spring.wso2am.dto.TokenResponse;
 import io.spring.wso2am.properties.SubscriptionsProperties;
+import io.spring.wso2am.properties.SubscriptionsProperties.Create;
 import io.spring.wso2am.properties.SubscriptionsProperties.GetAll;
 import io.spring.wso2am.utils.HttpEntityUtils;
 import io.swagger.client.publisher.model.SubscriptionList;
+import io.swagger.client.store.model.Subscription;
 
 @RestController
 @RequestMapping("/subscriptions")
@@ -33,6 +37,14 @@ public class SubscriptionsController {
 		this.sp = sp;
 		this.heu = heu;
 		this.mm = mm;
+	}
+	
+	@PostMapping
+	public ResponseEntity<Subscription> post(@RequestBody Subscription s) {
+		Create c = sp.getCreate();
+		c.setAuthorization(getAuthorization(c.getScope()));
+		HttpEntity<Subscription> he = heu.toHttpEntity(s, c.getAuthorization(), c.getContenttype());
+		return rt.exchange(c.getUrl(), HttpMethod.POST, he, Subscription.class);
 	}
 	
 	@GetMapping
